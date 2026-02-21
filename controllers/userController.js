@@ -8,10 +8,12 @@ const jwt = require('jsonwebtoken');
 exports.registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
+        console.log('Registering user:', { name, email, role });
 
         let user = await User.findOne({ email });
 
         if (user) {
+            console.log('Register failed: User already exists');
             return res.status(400).json({ msg: 'User already exists' });
         }
 
@@ -23,11 +25,13 @@ exports.registerUser = async (req, res) => {
         });
 
         await user.save();
+        console.log('User saved successfully');
 
         // Create JWT Payload
         const payload = {
             user: {
                 id: user.id,
+                role: user.role,
             },
         };
 
@@ -36,12 +40,15 @@ exports.registerUser = async (req, res) => {
             process.env.JWT_SECRET || 'mysecrettoken',
             { expiresIn: 360000 },
             (err, token) => {
-                if (err) throw err;
+                if (err) {
+                    console.error('JWT Signing Error:', err);
+                    throw err;
+                }
                 res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
             }
         );
     } catch (err) {
-        console.error(err.message);
+        console.error('Registration Catch Error:', err);
         res.status(500).send('Server Error');
     }
 };
@@ -69,6 +76,7 @@ exports.loginUser = async (req, res) => {
         const payload = {
             user: {
                 id: user.id,
+                role: user.role,
             },
         };
 

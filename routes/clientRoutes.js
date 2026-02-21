@@ -8,29 +8,32 @@ const {
     deleteClient,
 } = require('../controllers/clientController');
 
+const auth = require('../middleware/auth');
+const { admin } = require('../middleware/auth');
+
 // @route   POST /api/clients
 // @desc    Create a new client
-// @access  Public
-router.post('/', createClient);
+// @access  Private (Admin only)
+router.post('/', auth, admin, createClient);
 
 // @route   GET /api/clients
 // @desc    Get all clients
-// @access  Public
-router.get('/', getClients);
+// @access  Private
+router.get('/', auth, getClients);
 
 // @route   GET /api/clients/:id
 // @desc    Get client by ID
-// @access  Public
-router.get('/:id', getClientById);
+// @access  Private
+router.get('/:id', auth, getClientById);
 
 // @route   PUT /api/clients/:id
 // @desc    Update client
-// @access  Public
-router.put('/:id', updateClient);
+// @access  Private (Admin only)
+router.put('/:id', auth, admin, updateClient);
 
 // @route   DELETE /api/clients/:id
 // @desc    Delete client
-// @access  Public
-router.delete('/:id', deleteClient);
+// @access  Private (Admin only)
+router.delete('/:id', auth, admin, deleteClient);
 
 module.exports = router;

@@ -2,9 +2,13 @@ const Project = require('../models/Project');
 
 // @desc    Create a new project
 // @route   POST /api/projects
-// @access  Public
+// @access  Private (Admin only)
 exports.createProject = async (req, res) => {
     try {
+        console.log('--- Creating Project ---');
+        console.log('User:', req.user);
+        console.log('Body:', req.body);
+
         const { name, client, description, startDate, endDate, status } = req.body;
 
         const newProject = new Project({
@@ -17,10 +21,11 @@ exports.createProject = async (req, res) => {
         });
 
         const project = await newProject.save();
+        console.log('Project saved successfully:', project._id);
         res.status(201).json(project);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Create Project Catch Error:', err);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -29,7 +34,6 @@ exports.createProject = async (req, res) => {
 // @access  Public
 exports.getProjects = async (req, res) => {
     try {
-        // Populate client details (name and email)
         const projects = await Project.find()
             .populate('client', ['name', 'email'])
             .sort({ createdAt: -1 });
@@ -63,7 +67,7 @@ exports.getProjectById = async (req, res) => {
 
 // @desc    Update project
 // @route   PUT /api/projects/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.updateProject = async (req, res) => {
     try {
         const { name, client, description, startDate, endDate, status } = req.body;
@@ -98,7 +102,7 @@ exports.updateProject = async (req, res) => {
 
 // @desc    Delete project
 // @route   DELETE /api/projects/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.deleteProject = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);

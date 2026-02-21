@@ -2,9 +2,13 @@ const Client = require('../models/Client');
 
 // @desc    Create a new client
 // @route   POST /api/clients
-// @access  Public (for now)
+// @access  Private (Admin only)
 exports.createClient = async (req, res) => {
     try {
+        console.log('--- Creating Client ---');
+        console.log('User:', req.user);
+        console.log('Body:', req.body);
+
         const { name, email, phone, companyName, address, status } = req.body;
 
         const newClient = new Client({
@@ -13,17 +17,19 @@ exports.createClient = async (req, res) => {
             phone,
             companyName,
             address,
-            status, // Optional, defaults to 'Pending'
+            status,
         });
 
         const client = await newClient.save();
+        console.log('Client saved successfully:', client._id);
         res.status(201).json(client);
     } catch (err) {
         if (err.code === 11000) {
+            console.log('Create Client failed: Email exists');
             return res.status(400).json({ msg: 'Email already exists' });
         }
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Create Client Catch Error:', err);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -63,12 +69,11 @@ exports.getClientById = async (req, res) => {
 
 // @desc    Update client
 // @route   PUT /api/clients/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.updateClient = async (req, res) => {
     try {
         const { name, email, phone, companyName, address, status } = req.body;
 
-        // Build client object
         const clientFields = {};
         if (name) clientFields.name = name;
         if (email) clientFields.email = email;
@@ -99,7 +104,7 @@ exports.updateClient = async (req, res) => {
 
 // @desc    Delete client
 // @route   DELETE /api/clients/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.deleteClient = async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);

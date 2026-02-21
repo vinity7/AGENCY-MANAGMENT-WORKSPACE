@@ -22,6 +22,8 @@ const Register = () => {
         const success = await register(name, email, password, role);
         if (success) {
             navigate('/dashboard');
+        } else {
+            alert('Registration failed. This might be because the email is already in use or the server is down. Please try again.');
         }
     };
 

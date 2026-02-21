@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { Plus } from 'lucide-react';
 import Modal from '../components/Modal';
+import { AuthContext } from '../context/AuthContext';
 
 const Projects = () => {
+    const { user } = useContext(AuthContext);
     const [projects, setProjects] = useState([]);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ const Projects = () => {
             });
         } catch (err) {
             console.error(err);
-            alert('Failed to add project');
+            alert(err.response?.data?.msg || 'Failed to add project');
         }
     };
 
@@ -73,13 +75,15 @@ const Projects = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Projects</h1>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    <Plus size={20} />
-                    <span>Add Project</span>
-                </button>
+                {user?.role === 'Admin' && (
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        <Plus size={20} />
+                        <span>Add Project</span>
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -88,7 +92,7 @@ const Projects = () => {
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-xl font-semibold">{project.name}</h3>
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${project.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                    project.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                project.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
                                 }`}>
                                 {project.status}
                             </span>

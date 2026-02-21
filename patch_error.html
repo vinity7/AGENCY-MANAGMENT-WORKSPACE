@@ -1,0 +1,64 @@
+* URL rejected: Malformed input to a URL function
+* closing connection #-1
+curl: (3) URL rejected: Malformed input to a URL function
+* Host localhost:5001 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:5001...
+* Established connection to localhost (::1 port 5001) from ::1 port 65313 
+* using HTTP/1.x
+> PATCH /api/tasks/699976c4a947c3bcc90e30fd/status HTTP/1.1
+
+> Host: localhost:5001
+
+> User-Agent: curl/8.16.0
+
+> Accept: */*
+
+> Content-Type: application/json
+
+> Content-Length: 2
+
+> 
+
+} [2 bytes data]
+* upload completely sent off: 2 bytes
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>SyntaxError: Expected property name or &#39;}&#39; in JSON at position 1 (line 1 column 2)<br> &nbsp; &nbsp;at JSON.parse (&lt;anonymous&gt;)<br> &nbsp; &nbsp;at parse (C:\Users\vinit\.gemini\antigravity\scratch\agency-management-workspace\node_modules\body-parser\lib\types\json.js:72:19)<br> &nbsp; &nbsp;at C:\Users\vinit\.gemini\antigravity\scratch\agency-management-workspace\node_modules\body-parser\lib\read.js:162:18<br> &nbsp; &nbsp;at AsyncResource.runInAsyncScope (node:async_hooks:211:14)<br> &nbsp; &nbsp;at invokeCallback (C:\Users\vinit\.gemini\antigravity\scratch\agency-management-workspace\node_modules\raw-body\index.js:238:16)<br> &nbsp; &nbsp;at done (C:\Users\vinit\.gemini\antigravity\scratch\agency-management-workspace\node_modules\raw-body\index.js:227:7)<br> &nbsp; &nbsp;at IncomingMessage.onEnd (C:\Users\vinit\.gemini\antigravity\scratch\agency-management-workspace\node_modules\raw-body\index.js:287:7)<br> &nbsp; &nbsp;at IncomingMessage.emit (node:events:518:28)<br> &nbsp; &nbsp;at endReadableNT (node:internal/streams/readable:1698:12)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:90:21)</pre>
+</body>
+</html>
+< HTTP/1.1 400 Bad Request
+
+< X-Powered-By: Express
+
+< Access-Control-Allow-Origin: *
+
+< Content-Security-Policy: default-src 'none'
+
+< X-Content-Type-Options: nosniff
+
+< Content-Type: text/html; charset=utf-8
+
+< Content-Length: 1293
+
+< Date: Sat, 21 Feb 2026 09:18:28 GMT
+
+< Connection: keep-alive
+
+< Keep-Alive: timeout=5
+
+< 
+
+{ [1293 bytes data]
+
+100  1295  100  1293  100     2   463k    733 --:--:-- --:--:-- --:--:--  632k
+* Connection #0 to host localhost:5001 left intact

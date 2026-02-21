@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { Plus } from 'lucide-react';
 import Modal from '../components/Modal';
+import { AuthContext } from '../context/AuthContext';
 
 const Clients = () => {
+    const { user } = useContext(AuthContext);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +53,7 @@ const Clients = () => {
             });
         } catch (err) {
             console.error(err);
-            alert('Failed to add client');
+            alert(err.response?.data?.msg || 'Failed to add client');
         }
     };
 
@@ -61,13 +63,15 @@ const Clients = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Clients</h1>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    <Plus size={20} />
-                    <span>Add Client</span>
-                </button>
+                {user?.role === 'Admin' && (
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        <Plus size={20} />
+                        <span>Add Client</span>
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">

@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
 import { Plus } from 'lucide-react';
 import Modal from '../components/Modal';
+import { AuthContext } from '../context/AuthContext';
 
 const Invoices = () => {
+    const { user } = useContext(AuthContext);
     const [invoices, setInvoices] = useState([]);
     const [clients, setClients] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -82,13 +84,15 @@ const Invoices = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Invoices</h1>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    <Plus size={20} />
-                    <span>Add Invoice</span>
-                </button>
+                {user?.role === 'Admin' && (
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        <Plus size={20} />
+                        <span>Add Invoice</span>
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -113,7 +117,7 @@ const Invoices = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${invoice.status === 'Paid' ? 'bg-green-100 text-green-800' :
-                                            invoice.status === 'Overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                        invoice.status === 'Overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {invoice.status}
                                     </span>

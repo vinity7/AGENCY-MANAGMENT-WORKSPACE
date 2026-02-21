@@ -8,29 +8,32 @@ const {
     deleteProject,
 } = require('../controllers/projectController');
 
+const auth = require('../middleware/auth');
+const { admin } = require('../middleware/auth');
+
 // @route   POST /api/projects
 // @desc    Create a new project
-// @access  Public
-router.post('/', createProject);
+// @access  Private (Admin only)
+router.post('/', auth, admin, createProject);
 
 // @route   GET /api/projects
 // @desc    Get all projects
-// @access  Public
-router.get('/', getProjects);
+// @access  Private
+router.get('/', auth, getProjects);
 
 // @route   GET /api/projects/:id
 // @desc    Get project by ID
-// @access  Public
-router.get('/:id', getProjectById);
+// @access  Private
+router.get('/:id', auth, getProjectById);
 
 // @route   PUT /api/projects/:id
 // @desc    Update project
-// @access  Public
-router.put('/:id', updateProject);
+// @access  Private (Admin only)
+router.put('/:id', auth, admin, updateProject);
 
 // @route   DELETE /api/projects/:id
 // @desc    Delete project
-// @access  Public
-router.delete('/:id', deleteProject);
+// @access  Private (Admin only)
+router.delete('/:id', auth, admin, deleteProject);
 
 module.exports = router;
