@@ -20,4 +20,15 @@ router.get('/interns', getInterns);
 // @access  Public
 router.post('/login', require('../controllers/userController').loginUser);
 
+// @route   POST /api/users/forgot-password
+// @desc    Forgot password
+// @access  Public
+router.post('/forgot-password', require('../controllers/userController').forgotPassword);
+
+// @route   POST /api/users/reset-password
+// @desc    Reset password
+// @access  Public
+router.post('/reset-password', require('../controllers/userController').resetPassword);
+
+
 module.exports = router;

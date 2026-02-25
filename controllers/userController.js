@@ -107,3 +107,52 @@ exports.getInterns = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// @desc    Forgot Password
+// @route   POST /api/users/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User with this email does not exist' });
+        }
+
+        // In a real app, you would:
+        // 1. Generate a reset token (jwt or random string)
+        // 2. Save it to the user model with an expiry
+        // 3. Send an email with the reset link (e.g., /reset-password?token=...)
+
+        // For this project, we'll return a success message and log the "link"
+        console.log(`Password reset requested for ${email}. Mock link: http://localhost:5173/reset-password?email=${email}`);
+
+        res.json({ msg: 'Password reset instructions sent to your email.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Reset Password
+// @route   POST /api/users/reset-password
+// @access  Public
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Normally you'd verify the token here
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ msg: 'Password has been reset successfully.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

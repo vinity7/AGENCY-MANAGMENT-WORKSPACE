@@ -2,7 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+
 import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import Invoices from './pages/Invoices';
@@ -26,6 +29,9 @@ function App() {
           <Routes>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
 
             {/* Protected Routes with Layout */}
             <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
