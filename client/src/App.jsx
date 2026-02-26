@@ -10,6 +10,7 @@ import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import Invoices from './pages/Invoices';
 import Tasks from './pages/Tasks';
+import Analytics from './pages/Analytics';
 import Layout from './components/Layout';
 import { useContext } from 'react';
 import './index.css';
@@ -40,6 +41,7 @@ function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/tasks" element={<Tasks />} />
+              <Route path="/analytics" element={<Analytics />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" />} />

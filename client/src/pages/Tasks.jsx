@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle, Clock, AlertCircle, User, Briefcase, Calendar, ChevronRight, Play, Pause, Check, MoreHorizontal } from 'lucide-react';
 import Modal from '../components/Modal';
 import { AuthContext } from '../context/AuthContext';
 
@@ -73,7 +73,7 @@ const Tasks = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.post('/tasks', formData);
+            await api.post('/tasks', formData);
             fetchTasks();
             setIsModalOpen(false);
             setFormData({
@@ -91,12 +91,21 @@ const Tasks = () => {
         }
     };
 
-    const getPriorityColor = (priority) => {
+    const getPriorityStyles = (priority) => {
         switch (priority) {
-            case 'High': return 'text-red-600 bg-red-100';
-            case 'Medium': return 'text-yellow-600 bg-yellow-100';
-            case 'Low': return 'text-green-600 bg-green-100';
-            default: return 'text-gray-600 bg-gray-100';
+            case 'High': return 'bg-rose-50 text-rose-600 border-rose-100';
+            case 'Medium': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'Low': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            default: return 'bg-slate-50 text-slate-500 border-slate-100';
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'Completed': return <CheckCircle size={16} className="text-emerald-500" />;
+            case 'In Progress': return <Clock size={16} className="text-blue-500" />;
+            case 'On Hold': return <Pause size={16} className="text-amber-500" />;
+            default: return <AlertCircle size={16} className="text-slate-400" />;
         }
     };
 
@@ -105,156 +114,189 @@ const Tasks = () => {
         return task.assignedTo?._id === user?.id;
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading tasks...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    );
 
     return (
-        <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Task Management</h1>
+        <div className="p-4 md:p-10 space-y-10 max-w-7xl mx-auto">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Task Allotment</h1>
+                    <p className="text-slate-500 mt-1 text-sm font-medium">Distribute and track individual tokens of work across the team.</p>
+                </div>
                 {user?.role === 'Admin' && (
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+                        className="flex items-center space-x-2 px-5 py-2.5 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all font-sans"
                     >
-                        <Plus size={20} />
-                        <span>Create Task</span>
+                        <Plus size={18} />
+                        <span>Create Task Token</span>
                     </button>
                 )}
-            </div>
+            </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tasks.map((task) => (
-                    <div key={task._id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex flex-col justify-between">
+                    <div key={task._id} className="glass-card p-6 rounded-2xl flex flex-col justify-between group hover:shadow-xl transition-all duration-300 border-l-[6px] border-l-blue-500">
                         <div>
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-lg font-semibold">{task.name}</h3>
-                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${task.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                    task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                    {task.status}
-                                </span>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${getPriorityStyles(task.priority)}`}>
+                                    <span>{task.priority || 'Medium'}</span>
+                                </div>
+                                <div className="text-slate-300">
+                                    <MoreHorizontal size={18} />
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{task.description}</p>
 
-                            <div className="text-sm text-gray-500 space-y-2 mb-4">
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Project:</span>
-                                    <span>{task.project?.name}</span>
+                            <h3 className="text-lg font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{task.name}</h3>
+                            <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">{task.description}</p>
+
+                            <div className="space-y-3 mb-6">
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                    <div className="flex items-center text-slate-400">
+                                        <Briefcase size={14} className="mr-2" />
+                                        Project
+                                    </div>
+                                    <span className="text-slate-700">{task.project?.name}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Priority:</span>
-                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${getPriorityColor(task.priority)}`}>
-                                        {task.priority || 'Medium'}
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                    <div className="flex items-center text-slate-400">
+                                        <User size={14} className="mr-2" />
+                                        Assignee
+                                    </div>
+                                    <span className="text-slate-700">{task.assignedTo?.name || 'Unassigned'}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                    <div className="flex items-center text-slate-400">
+                                        <Calendar size={14} className="mr-2" />
+                                        Deadline
+                                    </div>
+                                    <span className={task.status !== 'Completed' ? 'text-rose-600' : 'text-slate-400 font-medium'}>
+                                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-GB') : 'N/A'}
                                     </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Assigned To:</span>
-                                    <span>{task.assignedTo?.name || 'Unassigned'}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Due:</span>
-                                    <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t flex justify-end space-x-2">
-                            {canUpdateStatus(task) && (
-                                <>
-                                    {task.status !== 'Completed' && (
-                                        <button
-                                            onClick={() => handleStatusUpdate(task._id, 'Completed')}
-                                            className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                                        >
-                                            Done
-                                        </button>
-                                    )}
-                                    {task.status === 'Pending' && (
-                                        <button
-                                            onClick={() => handleStatusUpdate(task._id, 'In Progress')}
-                                            className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                                        >
-                                            Start
-                                        </button>
-                                    )}
-                                    {task.status === 'In Progress' && (
-                                        <button
-                                            onClick={() => handleStatusUpdate(task._id, 'On Hold')}
-                                            className="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 transition"
-                                        >
-                                            Hold
-                                        </button>
-                                    )}
-                                </>
-                            )}
+                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                {getStatusIcon(task.status)}
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{task.status}</span>
+                            </div>
+
+                            <div className="flex space-x-2">
+                                {canUpdateStatus(task) && (
+                                    <>
+                                        {task.status !== 'Completed' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(task._id, 'Completed')}
+                                                className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                                title="Mark as Complete"
+                                            >
+                                                <Check size={14} />
+                                            </button>
+                                        )}
+                                        {task.status === 'Pending' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(task._id, 'In Progress')}
+                                                className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                title="Start Task"
+                                            >
+                                                <Play size={14} />
+                                            </button>
+                                        )}
+                                        {task.status === 'In Progress' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(task._id, 'On Hold')}
+                                                className="p-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-600 hover:text-white transition-all shadow-sm"
+                                                title="Put on Hold"
+                                            >
+                                                <Pause size={14} />
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                                <button className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors">
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
+
             {tasks.length === 0 && (
-                <div className="p-12 text-center text-gray-500 bg-white rounded-lg shadow">
-                    <p className="text-xl font-medium">No tasks found</p>
-                    <p className="text-sm">Get started by creating your first task.</p>
+                <div className="p-20 text-center glass-card rounded-2xl">
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                        <CheckCircle size={40} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800">No Tasks Assigned</h3>
+                    <p className="text-slate-400 mt-2 font-medium italic">Everything is clear. Create a new task token to begin work.</p>
                 </div>
             )}
 
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Create New Task"
+                title="Create Task Token"
             >
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
-                        <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500" />
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Task Identifier</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans" placeholder="e.g. Implement Auth Flow" />
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="description" value={formData.description} onChange={handleChange} rows="3" className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Work Requirements</label>
+                        <textarea name="description" value={formData.description} onChange={handleChange} rows="3" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans" placeholder="Details of the work to be performed..."></textarea>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                            <select name="project" value={formData.project} onChange={handleChange} required className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Origin Project</label>
+                            <select name="project" value={formData.project} onChange={handleChange} required className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans bg-white appearance-none">
                                 <option value="">Select Project</option>
                                 {projects.map(project => (
                                     <option key={project._id} value={project._id}>{project.name}</option>
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                            <select name="priority" value={formData.priority} onChange={handleChange} className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Criticality</label>
+                            <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans bg-white appearance-none">
                                 <option value="Low">Low</option>
                                 <option value="Medium">Medium</option>
                                 <option value="High">High</option>
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Assign To (Intern)</label>
-                        <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Lead Executor (Intern)</label>
+                        <select name="assignedTo" value={formData.assignedTo} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans bg-white appearance-none">
                             <option value="">Select Intern (Optional)</option>
                             {interns.map(intern => (
                                 <option key={intern._id} value={intern._id}>{intern.name}</option>
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                        <input type="date" name="dueDate" value={formData.dueDate} onChange={handleChange} className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Target Deadline</label>
+                            <input type="date" name="dueDate" value={formData.dueDate} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1 font-sans">Lifecycle Stage</label>
+                            <select name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-sans bg-white appearance-none">
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="On Hold">On Hold</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Initial Status</label>
-                        <select name="status" value={formData.status} onChange={handleChange} className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="Pending">Pending</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                            <option value="On Hold">On Hold</option>
-                        </select>
-                    </div>
-                    <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded font-semibold shadow hover:bg-blue-700 transition">
-                        Create Task
+                    <button type="submit" className="w-full py-3 mt-4 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all font-sans flex items-center justify-center gap-2">
+                        Issue Task Token <Plus size={18} />
                     </button>
                 </form>
             </Modal>
