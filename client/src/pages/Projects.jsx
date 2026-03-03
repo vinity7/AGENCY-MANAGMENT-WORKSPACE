@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
-import { Plus, Calendar, User, AlignLeft, ArrowRight, Search, Filter, MoreVertical } from 'lucide-react';
+import { Plus, Calendar, User, AlignLeft, ArrowRight, Search, Filter, MoreVertical, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { AuthContext } from '../context/AuthContext';
 
@@ -69,6 +69,18 @@ const Projects = () => {
         }
     };
 
+    const handleDeleteProject = async (id) => {
+        if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+            try {
+                await api.delete(`/projects/${id}`);
+                setProjects(projects.filter(project => project._id !== id));
+            } catch (err) {
+                console.error(err);
+                alert(err.response?.data?.msg || 'Failed to delete project');
+            }
+        }
+    };
+
     const getStatusStyles = (status) => {
         switch (status) {
             case 'Completed': return 'bg-emerald-100 text-emerald-700';
@@ -133,9 +145,23 @@ const Projects = () => {
                                 <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
                                     <AlignLeft size={20} />
                                 </div>
-                                <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${getStatusStyles(project.status)}`}>
-                                    {project.status}
-                                </span>
+                                <div className="flex items-center space-x-2">
+                                    <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${getStatusStyles(project.status)}`}>
+                                        {project.status}
+                                    </span>
+                                    {user?.role === 'Admin' && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteProject(project._id);
+                                            }}
+                                            className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors bg-white rounded-lg shadow-sm border border-slate-100"
+                                            title="Delete Project"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <h3 className="text-xl font-black text-slate-800 mb-2 leading-tight group-hover:text-blue-700 transition-colors">{project.name}</h3>
                             <div className="flex items-center text-sm font-bold text-slate-400 mb-4 bg-slate-50/50 w-fit px-3 py-1 rounded-lg">

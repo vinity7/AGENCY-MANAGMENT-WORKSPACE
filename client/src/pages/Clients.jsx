@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
-import { Plus, Search, Mail, Phone, Building2, MapPin, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Mail, Phone, Building2, MapPin, MoreHorizontal, Trash2, RefreshCw } from 'lucide-react';
 import Modal from '../components/Modal';
 import { AuthContext } from '../context/AuthContext';
 
@@ -55,6 +55,29 @@ const Clients = () => {
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.msg || 'Failed to add client');
+        }
+    };
+
+    const handleDeleteClient = async (id) => {
+        if (window.confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+            try {
+                await api.delete(`/clients/${id}`);
+                setClients(clients.filter(client => client._id !== id));
+            } catch (err) {
+                console.error(err);
+                alert(err.response?.data?.msg || 'Failed to delete client');
+            }
+        }
+    };
+
+    const handleStatusToggle = async (client) => {
+        const newStatus = client.status === 'Active' ? 'Inactive' : 'Active';
+        try {
+            const res = await api.put(`/clients/${client._id}`, { status: newStatus });
+            setClients(clients.map(c => c._id === client._id ? res.data : c));
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.msg || 'Failed to update status');
         }
     };
 
@@ -139,15 +162,37 @@ const Clients = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5 whitespace-nowrap">
-                                        <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${client.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                                            }`}>
-                                            {client.status}
-                                        </span>
+                                        <div className="flex items-center space-x-2">
+                                            <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${client.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                {client.status}
+                                            </span>
+                                            {user?.role === 'Admin' && (
+                                                <button
+                                                    onClick={() => handleStatusToggle(client)}
+                                                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                                                    title="Toggle Status"
+                                                >
+                                                    <RefreshCw size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-8 py-5 whitespace-nowrap text-right">
-                                        <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
-                                            <MoreHorizontal size={18} />
-                                        </button>
+                                        <div className="flex justify-end items-center space-x-2">
+                                            {user?.role === 'Admin' && (
+                                                <button
+                                                    onClick={() => handleDeleteClient(client._id)}
+                                                    className="p-2 text-slate-400 hover:text-rose-600 transition-colors"
+                                                    title="Delete Client"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                            <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                                                <MoreHorizontal size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

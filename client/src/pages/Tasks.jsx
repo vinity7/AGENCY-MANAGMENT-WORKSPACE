@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import api from '../api/axios';
-import { Plus, CheckCircle, Clock, AlertCircle, User, Briefcase, Calendar, ChevronRight, Play, Pause, Check, MoreHorizontal } from 'lucide-react';
+import { Plus, CheckCircle, Clock, AlertCircle, User, Briefcase, Calendar, ChevronRight, Play, Pause, Check, MoreHorizontal, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { AuthContext } from '../context/AuthContext';
 
@@ -91,6 +91,18 @@ const Tasks = () => {
         }
     };
 
+    const handleDeleteTask = async (id) => {
+        if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+            try {
+                await api.delete(`/tasks/${id}`);
+                setTasks(tasks.filter(task => task._id !== id));
+            } catch (err) {
+                console.error(err);
+                alert(err.response?.data?.msg || 'Failed to delete task');
+            }
+        }
+    };
+
     const getPriorityStyles = (priority) => {
         switch (priority) {
             case 'High': return 'bg-rose-50 text-rose-600 border-rose-100';
@@ -146,8 +158,19 @@ const Tasks = () => {
                                 <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${getPriorityStyles(task.priority)}`}>
                                     <span>{task.priority || 'Medium'}</span>
                                 </div>
-                                <div className="text-slate-300">
-                                    <MoreHorizontal size={18} />
+                                <div className="flex items-center space-x-2">
+                                    {user?.role === 'Admin' && (
+                                        <button
+                                            onClick={() => handleDeleteTask(task._id)}
+                                            className="p-1.5 text-slate-300 hover:text-rose-600 transition-colors bg-white/50 rounded-lg hover:bg-white shadow-sm"
+                                            title="Delete Task"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
+                                    <div className="text-slate-300">
+                                        <MoreHorizontal size={18} />
+                                    </div>
                                 </div>
                             </div>
 
