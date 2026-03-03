@@ -30,6 +30,13 @@ app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Root route for Vercel serverless function health check
+app.get('/', (req, res) => {
+    res.json({ message: 'Agency Management API is running' });
+});
+
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+}
 
 module.exports = app;
