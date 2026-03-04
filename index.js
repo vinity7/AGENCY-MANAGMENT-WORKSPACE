@@ -28,6 +28,27 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
+const fs = require('fs');
+const path = require('path');
+
+// Diagnostic route
+app.get('/api/debug-paths', (req, res) => {
+    const distPath = path.join(__dirname, 'client/dist');
+    res.json({
+        dirname: __dirname,
+        distPath,
+        distExists: fs.existsSync(distPath),
+        files: fs.existsSync(distPath) ? fs.readdirSync(distPath) : []
+    });
+});
+
+// Serve static assets in production
+app.use(express.static(path.join(__dirname, 'client/dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
+});
+
 const PORT = process.env.PORT || 5001;
 
 
