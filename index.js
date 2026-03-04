@@ -38,15 +38,21 @@ app.get('/api/debug-paths', (req, res) => {
         dirname: __dirname,
         distPath,
         distExists: fs.existsSync(distPath),
-        files: fs.existsSync(distPath) ? fs.readdirSync(distPath) : []
+        files: fs.existsSync(distPath) ? fs.readdirSync(distPath) : [],
+        envKeys: Object.keys(process.env).filter(key => key.includes('MONGO') || key.includes('PORT'))
     });
 });
 
 // Serve static assets in production
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
-app.get('*path', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
+app.get('(.*)', (req, res) => {
+    const indexPath = path.join(__dirname, 'client/dist', 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send(`Not Found. Searched at: ${indexPath}`);
+    }
 });
 
 const PORT = process.env.PORT || 5001;
