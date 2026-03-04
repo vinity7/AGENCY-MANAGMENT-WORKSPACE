@@ -45,7 +45,7 @@ app.get('/api/debug-paths', (req, res) => {
 // Serve static assets in production
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
-app.get('*', (req, res) => {
+app.get('*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
 });
 
