@@ -46,7 +46,7 @@ app.get('/api/debug-paths', (req, res) => {
 // Serve static assets in production
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
-app.get('(.*)', (req, res) => {
+app.get(/^(?!\/api).*/, (req, res) => {
     const indexPath = path.join(__dirname, 'client/dist', 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);

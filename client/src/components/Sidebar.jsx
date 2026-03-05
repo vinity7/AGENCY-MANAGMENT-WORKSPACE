@@ -22,13 +22,13 @@ const Sidebar = () => {
     }
 
     return (
-        <div className="h-screen w-72 bg-slate-900 text-white flex flex-col fixed left-0 top-0 z-50 shadow-2xl overflow-hidden">
+        <div className="h-screen w-72 bg-[#0a0a0a]/80 backdrop-blur-xl text-white flex flex-col fixed left-0 top-0 z-50 shadow-2xl overflow-hidden border-r border-white/5">
             <div className="p-8 flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/40">
+                <div className="p-2 premium-gradient rounded-xl shadow-lg shadow-blue-500/20">
                     <LayoutGrid size={24} className="text-white" />
                 </div>
-                <h1 className="text-xl font-black tracking-tighter text-white">
-                    AGENCY<span className="text-blue-500">MGR</span>
+                <h1 className="text-xl font-black tracking-tighter text-white uppercase">
+                    Agency<span className="text-blue-500">Mgr</span>
                 </h1>
             </div>
 
@@ -39,8 +39,8 @@ const Sidebar = () => {
                         key={item.path}
                         to={item.path}
                         className={`flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${isActive(item.path)
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-100'
+                            ? 'premium-gradient text-white shadow-lg shadow-blue-500/20'
+                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
                             }`}
                     >
                         <span className={`transition-transform duration-300 group-hover:scale-110 ${isActive(item.path) ? 'text-white' : 'text-slate-500 group-hover:text-blue-400'}`}>

@@ -97,7 +97,7 @@ const Clients = () => {
         <div className="p-4 md:p-10 space-y-10 max-w-7xl mx-auto">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Clients</h1>
+                    <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Clients</h1>
                     <p className="text-slate-500 mt-1 text-sm font-medium">Manage your agency relationships and contacts.</p>
                 </div>
                 {user?.role === 'Admin' && (
@@ -112,7 +112,7 @@ const Clients = () => {
             </header>
 
             <div className="glass-card rounded-2xl overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
@@ -120,14 +120,14 @@ const Clients = () => {
                             placeholder="Search clients by name, company..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                         />
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-100">
-                        <thead className="bg-[#fcfdfe]">
+                    <table className="min-w-full divide-y divide-white/5">
+                        <thead className="bg-white/[0.02]">
                             <tr>
                                 <th className="px-8 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Client Information</th>
                                 <th className="px-8 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Company Details</th>
@@ -135,17 +135,17 @@ const Clients = () => {
                                 <th className="px-8 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white/50 divide-y divide-slate-100">
+                        <tbody className="bg-transparent divide-y divide-white/5">
                             {filteredClients.map((client) => (
-                                <tr key={client._id} className="hover:bg-blue-50/30 transition-colors group">
+                                <tr key={client._id} className="hover:bg-white/5 transition-colors group">
                                     <td className="px-8 py-5 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                            <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm mr-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
                                                 {client.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <div className="text-sm font-bold text-slate-800">{client.name}</div>
-                                                <div className="flex items-center text-xs text-slate-400 mt-1">
+                                                <div className="text-sm font-bold text-slate-200">{client.name}</div>
+                                                <div className="flex items-center text-[10px] uppercase font-bold tracking-widest text-slate-500 mt-1">
                                                     <Mail size={12} className="mr-1" /> {client.email}
                                                 </div>
                                             </div>
@@ -153,10 +153,10 @@ const Clients = () => {
                                     </td>
                                     <td className="px-8 py-5 whitespace-nowrap">
                                         <div className="flex flex-col space-y-1">
-                                            <div className="text-sm font-semibold text-slate-700 flex items-center">
-                                                <Building2 size={14} className="mr-1.5 text-slate-400" /> {client.companyName}
+                                            <div className="text-sm font-semibold text-slate-300 flex items-center">
+                                                <Building2 size={14} className="mr-1.5 text-slate-500" /> {client.companyName}
                                             </div>
-                                            <div className="text-xs text-slate-400 flex items-center">
+                                            <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 flex items-center">
                                                 <Phone size={12} className="mr-1.5" /> {client.phone || 'No phone'}
                                             </div>
                                         </div>

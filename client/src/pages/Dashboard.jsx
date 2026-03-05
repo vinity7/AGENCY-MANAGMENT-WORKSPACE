@@ -13,9 +13,9 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
         />
         <div className="flex items-center justify-between relative z-10">
             <div>
-                <p className="text-xs text-slate-500 font-semibold tracking-wider uppercase mb-1">{title}</p>
+                <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase mb-1">{title}</p>
                 <div className="flex items-baseline space-x-2">
-                    <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
+                    <h3 className="text-3xl font-black text-white">{value}</h3>
                     <TrendingUp size={14} className="text-emerald-500" />
                 </div>
             </div>
@@ -62,16 +62,16 @@ const Dashboard = () => {
         <div className="p-4 md:p-10 space-y-10 max-w-7xl mx-auto">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Overview</h1>
-                    <p className="text-slate-500 mt-1 text-sm font-medium">
-                        Welcome back, <span className="text-blue-600 font-bold">{user?.name}</span>. Here's what's happening today.
+                    <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Overview</h1>
+                    <p className="text-slate-400 mt-1 text-sm font-medium">
+                        Welcome back, <span className="text-blue-400 font-bold">{user?.name}</span>. Here's what's happening today.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 bg-opacity-80 rounded-lg hover:bg-blue-100 transition-colors">
+                    <button className="px-5 py-2.5 text-xs font-bold text-slate-300 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
                         Download Report
                     </button>
-                    <button className="px-4 py-2 text-xs font-bold text-white premium-gradient rounded-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all">
+                    <button className="px-5 py-2.5 text-xs font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all">
                         Create New
                     </button>
                 </div>
@@ -90,25 +90,25 @@ const Dashboard = () => {
                 <div className="glass-card p-8 rounded-2xl">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-blue-100/50 rounded-lg text-blue-600">
+                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
                                 <Activity size={20} />
                             </div>
-                            <h2 className="text-xl font-bold text-slate-800">Active Projects</h2>
+                            <h2 className="text-xl font-black text-white tracking-tight uppercase">Active Projects</h2>
                         </div>
-                        <button className="text-sm font-bold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all">
+                        <button className="text-sm font-bold text-blue-400 flex items-center gap-1 hover:gap-2 transition-all">
                             View All <ArrowRight size={14} />
                         </button>
                     </div>
                     <div className="space-y-5">
                         {stats?.activeProjects.map(project => (
-                            <div key={project._id} className="group flex justify-between items-center p-4 rounded-xl hover:bg-white/50 border border-transparent hover:border-slate-100 transition-all duration-300">
+                            <div key={project._id} className="group flex justify-between items-center p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300">
                                 <div className="flex items-center space-x-4">
                                     <div className="w-10 h-10 rounded-full premium-gradient flex items-center justify-center text-white font-bold text-sm">
                                         {project.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{project.name}</p>
-                                        <p className="text-xs text-slate-400 font-medium">Last updated 2 days ago</p>
+                                        <p className="font-bold text-slate-200 group-hover:text-blue-400 transition-colors">{project.name}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Last updated 2 days ago</p>
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${project.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
@@ -129,25 +129,25 @@ const Dashboard = () => {
                 <div className="glass-card p-8 rounded-2xl">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-emerald-100/50 rounded-lg text-emerald-600">
+                            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
                                 <CheckCircle size={20} />
                             </div>
-                            <h2 className="text-xl font-bold text-slate-800">Recent Tasks</h2>
+                            <h2 className="text-xl font-black text-white tracking-tight uppercase">Recent Tasks</h2>
                         </div>
-                        <button className="text-sm font-bold text-emerald-600 flex items-center gap-1 hover:gap-2 transition-all">
+                        <button className="text-sm font-bold text-emerald-400 flex items-center gap-1 hover:gap-2 transition-all">
                             View All <ArrowRight size={14} />
                         </button>
                     </div>
                     <div className="space-y-4">
                         {stats?.recentTasks.map(task => (
-                            <div key={task._id} className="group flex justify-between items-center p-4 rounded-xl hover:bg-white/50 border border-transparent hover:border-slate-100 transition-all duration-300">
+                            <div key={task._id} className="group flex justify-between items-center p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300">
                                 <div className="flex items-center space-x-4">
-                                    <div className={`p-2 rounded-lg ${task.status === 'Completed' ? 'bg-emerald-50 text-emerald-500' : 'bg-amber-50 text-amber-500'}`}>
+                                    <div className={`p-2 rounded-lg ${task.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                                         <CheckCircle size={18} />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">{task.name}</p>
-                                        <p className="text-xs text-slate-400 font-medium truncate max-w-[150px]">{task.project?.name || 'No Project'}</p>
+                                        <p className="font-bold text-slate-200 group-hover:text-emerald-400 transition-colors">{task.name}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate max-w-[150px]">{task.project?.name || 'No Project'}</p>
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${task.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'

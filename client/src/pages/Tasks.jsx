@@ -136,7 +136,7 @@ const Tasks = () => {
         <div className="p-4 md:p-10 space-y-10 max-w-7xl mx-auto">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Task Allotment</h1>
+                    <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Task Allotment</h1>
                     <p className="text-slate-500 mt-1 text-sm font-medium">Distribute and track individual tokens of work across the team.</p>
                 </div>
                 {user?.role === 'Admin' && (
@@ -152,7 +152,7 @@ const Tasks = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tasks.map((task) => (
-                    <div key={task._id} className="glass-card p-6 rounded-2xl flex flex-col justify-between group hover:shadow-xl transition-all duration-300 border-l-[6px] border-l-blue-500">
+                    <div key={task._id} className="glass-card p-6 rounded-2xl flex flex-col justify-between group hover:shadow-2xl transition-all duration-300 border-l-[6px] border-l-blue-500/50">
                         <div>
                             <div className="flex justify-between items-start mb-4">
                                 <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${getPriorityStyles(task.priority)}`}>
@@ -162,7 +162,7 @@ const Tasks = () => {
                                     {user?.role === 'Admin' && (
                                         <button
                                             onClick={() => handleDeleteTask(task._id)}
-                                            className="p-1.5 text-slate-300 hover:text-rose-600 transition-colors bg-white/50 rounded-lg hover:bg-white shadow-sm"
+                                            className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors bg-white/5 rounded-lg hover:bg-white/10 shadow-sm"
                                             title="Delete Task"
                                         >
                                             <Trash2 size={16} />
@@ -174,23 +174,23 @@ const Tasks = () => {
                                 </div>
                             </div>
 
-                            <h3 className="text-lg font-black text-slate-800 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{task.name}</h3>
-                            <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">{task.description}</p>
+                            <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-400 transition-colors uppercase tracking-tight">{task.name}</h3>
+                            <p className="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-2 italic">{task.description}</p>
 
                             <div className="space-y-3 mb-6">
                                 <div className="flex items-center justify-between text-xs font-bold">
-                                    <div className="flex items-center text-slate-400">
+                                    <div className="flex items-center text-slate-500">
                                         <Briefcase size={14} className="mr-2" />
                                         Project
                                     </div>
-                                    <span className="text-slate-700">{task.project?.name}</span>
+                                    <span className="text-slate-200">{task.project?.name}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs font-bold">
-                                    <div className="flex items-center text-slate-400">
+                                    <div className="flex items-center text-slate-500">
                                         <User size={14} className="mr-2" />
                                         Assignee
                                     </div>
-                                    <span className="text-slate-700">{task.assignedTo?.name || 'Unassigned'}</span>
+                                    <span className="text-slate-200">{task.assignedTo?.name || 'Unassigned'}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs font-bold">
                                     <div className="flex items-center text-slate-400">
@@ -204,7 +204,7 @@ const Tasks = () => {
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                                 {getStatusIcon(task.status)}
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{task.status}</span>
