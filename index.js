@@ -49,8 +49,27 @@ app.get('/api/debug-paths', (req, res) => {
     });
 });
 
+// Diagnostic: List files in client/dist on startup
+const distPath = path.join(__dirname, 'client/dist');
+const assetsPath = path.join(distPath, 'assets');
+
+console.log('--- Production Asset Check ---');
+console.log('Searching for assets at:', distPath);
+if (fs.existsSync(distPath)) {
+    console.log('Contents of client/dist:', fs.readdirSync(distPath));
+    if (fs.existsSync(assetsPath)) {
+        console.log('Contents of client/dist/assets:', fs.readdirSync(assetsPath));
+    } else {
+        console.log('WARNING: client/dist/assets folder not found.');
+    }
+} else {
+    console.log('WARNING: client/dist folder not found.');
+}
+
 // Serve static assets in production
-app.use(express.static(path.join(__dirname, 'client/dist')));
+app.use(express.static(distPath));
+// Fallback: serve assets from the assets folder at the root (solves Vite root request issue)
+app.use(express.static(assetsPath));
 
 app.get(/^(?!\/api).*/, (req, res) => {
     const indexPath = path.join(__dirname, 'client/dist', 'index.html');
