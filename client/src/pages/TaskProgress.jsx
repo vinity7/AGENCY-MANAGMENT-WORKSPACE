@@ -38,7 +38,8 @@ const TaskProgress = () => {
     };
 
     const handleToggleMilestone = async (milestoneId) => {
-        const isLead = task.teamLead?._id === user?.id;
+        const userId = user?._id || user?.id;
+        const isLead = task.teamLead?._id === userId;
         const isAdmin = user?.role === 'Admin';
         
         if (!isAdmin && !isLead) {
@@ -56,7 +57,8 @@ const TaskProgress = () => {
     };
 
     const isAuthorized = () => {
-        return user?.role === 'Admin' || task?.teamLead?._id === user?.id;
+        const userId = user?._id || user?.id;
+        return user?.role === 'Admin' || (task?.teamLead?._id === userId && !!userId);
     };
 
     if (loading) return (
@@ -254,7 +256,7 @@ const TaskProgress = () => {
                             <div className="p-6 bg-blue-600/[0.03] rounded-[2.5rem] border border-blue-500/10 hover:border-blue-500/30 transition-all duration-500 relative z-10 group/lead">
                                 <div className="flex items-center">
                                     <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center text-blue-400 font-black text-2xl mr-6 border-2 border-blue-500/20 shadow-2xl shadow-blue-500/20 group-hover/lead:scale-110 transition-transform duration-500">
-                                        {task.teamLead.name.charAt(0)}
+                                        {task.teamLead.name?.charAt(0)}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-white font-black text-xl uppercase tracking-tighter leading-none mb-1.5 truncate shadow-blue-500/10">{task.teamLead.name}</h4>

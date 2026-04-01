@@ -112,7 +112,7 @@ const Register = () => {
 
                     <div className="planet-element"></div>
 
-                    <div className="cosset-brand">cosset</div>
+                    <div className="cosset-brand">AgencyOS</div>
                 </div>
             </div>
         </div>

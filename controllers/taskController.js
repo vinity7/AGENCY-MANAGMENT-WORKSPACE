@@ -25,39 +25,51 @@ exports.createTask = async (req, res) => {
         const task = await newTask.save();
         console.log('Task saved successfully:', task._id);
 
-        // Send Email Notification to Team Lead and Members
-        const notifyIds = [...(task.assignedMembers || [])];
-        if (teamLead && !notifyIds.includes(teamLead.toString())) {
-            notifyIds.push(teamLead);
+        // Send Email Notification to Team Lead and Members (Non-blocking)
+        const notifyIdsSet = new Set();
+        if (Array.isArray(task.assignedMembers)) {
+            task.assignedMembers.forEach(id => notifyIdsSet.add(id.toString()));
+        }
+        if (teamLead) {
+            notifyIdsSet.add(teamLead.toString());
         }
 
+        const notifyIds = Array.from(notifyIdsSet);
+
         if (notifyIds.length > 0) {
-            const users = await User.find({ _id: { $in: notifyIds } });
-            
-            for (const user of users) {
-                if (user.email) {
-                    await sendEmail({
-                        email: user.email,
-                        subject: `New Team Assignment: ${name}`,
-                        message: `Hello ${user.name},\n\nYou have been assigned to the team for the task: ${name}.\n\nLead: ${teamLead ? 'Specified' : 'Not assigned'}\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard to track milestones.`,
-                        html: `
-                            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                                <h2 style="color: #2563eb;">New Task Allocation: ${name}</h2>
-                                <p>Hello <strong>${user.name}</strong>,</p>
-                                <p>You have been added to the execution team for:</p>
-                                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                    <h3 style="margin-top: 0; color: #1e293b;">${name}</h3>
-                                    <p style="color: #64748b; font-size: 14px;">${description || 'No additional details.'}</p>
-                                    <p style="font-weight: bold; margin-bottom: 0;">Lead Deadline: <span style="color: #e11d48;">${dueDate ? new Date(dueDate).toLocaleDateString() : 'Flexible'}</span></p>
-                                </div>
-                                <p>Progress for this task is tracked via milestones in the workspace.</p>
-                                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                                <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
-                            </div>
-                        `
-                    });
-                }
-            }
+            // We don't await the entire email block to avoid slowing down the response
+            User.find({ _id: { $in: notifyIds } })
+                .then(async (users) => {
+                    for (const user of users) {
+                        if (user.email) {
+                            try {
+                                await sendEmail({
+                                    email: user.email,
+                                    subject: `New Team Assignment: ${name}`,
+                                    message: `Hello ${user.name},\n\nYou have been assigned to the team for the task: ${name}.\n\nLead: ${teamLead ? 'Specified' : 'Not assigned'}\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard to track milestones.`,
+                                    html: `
+                                        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                                            <h2 style="color: #2563eb;">New Task Allocation: ${name}</h2>
+                                            <p>Hello <strong>${user.name}</strong>,</p>
+                                            <p>You have been added to the execution team for:</p>
+                                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                                <h3 style="margin-top: 0; color: #1e293b;">${name}</h3>
+                                                <p style="color: #64748b; font-size: 14px;">${description || 'No additional details.'}</p>
+                                                <p style="font-weight: bold; margin-bottom: 0;">Lead Deadline: <span style="color: #e11d48;">${dueDate ? new Date(dueDate).toLocaleDateString() : 'Flexible'}</span></p>
+                                            </div>
+                                            <p>Progress for this task is tracked via milestones in the workspace.</p>
+                                            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                                            <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
+                                        </div>
+                                    `
+                                });
+                            } catch (emailErr) {
+                                console.error(`Failed to send email to ${user.email}:`, emailErr);
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error('Error finding users for notification:', err));
         }
 
         res.status(201).json(task);
@@ -177,7 +189,14 @@ exports.updateTaskStatus = async (req, res) => {
 
         task.status = status;
         await task.save();
-        res.json(task);
+        
+        // Populate before returning
+        const populatedTask = await Task.findById(task._id)
+            .populate('project', ['name', 'description', 'status'])
+            .populate('assignedMembers', ['name', 'email'])
+            .populate('teamLead', ['name', 'email']);
+
+        res.json(populatedTask);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -213,7 +232,14 @@ exports.toggleMilestone = async (req, res) => {
         }
 
         await task.save();
-        res.json(task);
+
+        // Populate before returning
+        const populatedTask = await Task.findById(task._id)
+            .populate('project', ['name', 'description', 'status'])
+            .populate('assignedMembers', ['name', 'email'])
+            .populate('teamLead', ['name', 'email']);
+
+        res.json(populatedTask);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

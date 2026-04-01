@@ -67,14 +67,7 @@ const Dashboard = () => {
                         Welcome back, <span className="text-blue-400 font-bold">{user?.name}</span>. Here's what's happening today.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="px-5 py-2.5 text-xs font-bold text-slate-300 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                        Download Report
-                    </button>
-                    <button className="px-5 py-2.5 text-xs font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all">
-                        Create New
-                    </button>
-                </div>
+
             </header>
 
             {/* Stats Grid */}

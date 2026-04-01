@@ -87,7 +87,7 @@ const Login = () => {
                         {/* If an image is available later, it can go here */}
                     </div>
 
-                    <div className="cosset-brand">AMW</div>
+                    <div className="cosset-brand">AgencyOS</div>
                 </div>
             </div>
         </div>

@@ -28,7 +28,7 @@ const Sidebar = () => {
                     <LayoutGrid size={24} className="text-white" />
                 </div>
                 <h1 className="text-xl font-black tracking-tighter text-white uppercase">
-                    Agency<span className="text-blue-500">Mgr</span>
+                    Agency<span className="text-blue-500">OS</span>
                 </h1>
             </div>
 
