@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -9,6 +10,15 @@ exports.registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
         console.log('Registering user:', { name, email, role });
+
+        // Diagnostic: Check DB connection
+        if (mongoose.connection.readyState !== 1) {
+            console.error('Database connection error: Mongoose state is', mongoose.connection.readyState);
+            return res.status(500).json({ 
+                msg: 'Database connection error', 
+                error: 'Mongoose is not connected to MongoDB' 
+            });
+        }
 
         let user = await User.findOne({ email });
 
@@ -60,7 +70,7 @@ exports.registerUser = async (req, res) => {
         console.error('Registration Catch Error:', err);
         res.status(500).json({ 
             msg: 'Registration Server Error', 
-            error: process.env.NODE_ENV === 'production' ? err.message : err 
+            error: err.message || 'Unknown server error'
         });
     }
 };
