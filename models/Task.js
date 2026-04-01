@@ -13,10 +13,19 @@ const TaskSchema = new mongoose.Schema({
         ref: 'Project',
         required: true,
     },
-    assignedTo: {
+    assignedMembers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    teamLead: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    milestones: [{
+        title: { type: String, required: true },
+        completed: { type: Boolean, default: false },
+        deadline: { type: Date }
+    }],
     dueDate: {
         type: Date,
     },
@@ -37,3 +46,4 @@ const TaskSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Task', TaskSchema);
+

@@ -7,49 +7,56 @@ const sendEmail = require('../utils/emailService');
 // @access  Private (Admin only)
 exports.createTask = async (req, res) => {
     try {
-        console.log('--- Creating Task ---');
-        console.log('User:', req.user);
-        console.log('Body:', req.body);
-
-        const { name, description, project, assignedTo, dueDate, status } = req.body;
+        console.log('--- Creating Team Task ---');
+        const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
 
         const newTask = new Task({
             name,
             description,
             project,
-            assignedTo,
+            assignedMembers: Array.isArray(assignedMembers) ? assignedMembers : (assignedMembers ? [assignedMembers] : []),
+            teamLead,
+            milestones: Array.isArray(milestones) ? milestones : [],
             dueDate,
             status,
-            priority: req.body.priority || 'Medium',
+            priority: priority || 'Medium',
         });
 
         const task = await newTask.save();
         console.log('Task saved successfully:', task._id);
 
-        // Send Email Notification to Intern
-        if (assignedTo) {
-            const intern = await User.findById(assignedTo);
-            if (intern && intern.email) {
-                await sendEmail({
-                    email: intern.email,
-                    subject: `New Task Assigned: ${name}`,
-                    message: `Hello ${intern.name},\n\nYou have been assigned a new task: ${name}.\n\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard for details.`,
-                    html: `
-                        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                            <h2 style="color: #2563eb;">New Task Allocated</h2>
-                            <p>Hello <strong>${intern.name}</strong>,</p>
-                            <p>You have been assigned a new work token:</p>
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="margin-top: 0; color: #1e293b;">${name}</h3>
-                                <p style="color: #64748b; font-size: 14px;">${description || 'No additional details.'}</p>
-                                <p style="font-weight: bold; margin-bottom: 0;">Deadline: <span style="color: #e11d48;">${dueDate ? new Date(dueDate).toLocaleDateString() : 'Flexible'}</span></p>
+        // Send Email Notification to Team Lead and Members
+        const notifyIds = [...(task.assignedMembers || [])];
+        if (teamLead && !notifyIds.includes(teamLead.toString())) {
+            notifyIds.push(teamLead);
+        }
+
+        if (notifyIds.length > 0) {
+            const users = await User.find({ _id: { $in: notifyIds } });
+            
+            for (const user of users) {
+                if (user.email) {
+                    await sendEmail({
+                        email: user.email,
+                        subject: `New Team Assignment: ${name}`,
+                        message: `Hello ${user.name},\n\nYou have been assigned to the team for the task: ${name}.\n\nLead: ${teamLead ? 'Specified' : 'Not assigned'}\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard to track milestones.`,
+                        html: `
+                            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                                <h2 style="color: #2563eb;">New Task Allocation: ${name}</h2>
+                                <p>Hello <strong>${user.name}</strong>,</p>
+                                <p>You have been added to the execution team for:</p>
+                                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                    <h3 style="margin-top: 0; color: #1e293b;">${name}</h3>
+                                    <p style="color: #64748b; font-size: 14px;">${description || 'No additional details.'}</p>
+                                    <p style="font-weight: bold; margin-bottom: 0;">Lead Deadline: <span style="color: #e11d48;">${dueDate ? new Date(dueDate).toLocaleDateString() : 'Flexible'}</span></p>
+                                </div>
+                                <p>Progress for this task is tracked via milestones in the workspace.</p>
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                                <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
                             </div>
-                            <p>Please log in to the Agency Workspace to start working on this task.</p>
-                            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                            <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
-                        </div>
-                    `
-                });
+                        `
+                    });
+                }
             }
         }
 
@@ -67,7 +74,8 @@ exports.getTasks = async (req, res) => {
     try {
         const tasks = await Task.find()
             .populate('project', ['name', 'status'])
-            .populate('assignedTo', ['name', 'email'])
+            .populate('assignedMembers', ['name', 'email'])
+            .populate('teamLead', ['name', 'email'])
             .sort({ createdAt: -1 });
         res.json(tasks);
     } catch (err) {
@@ -82,8 +90,9 @@ exports.getTasks = async (req, res) => {
 exports.getTaskById = async (req, res) => {
     try {
         const task = await Task.findById(req.params.id)
-            .populate('project', ['name', 'status'])
-            .populate('assignedTo', ['name', 'email']);
+            .populate('project', ['name', 'description', 'status'])
+            .populate('assignedMembers', ['name', 'email'])
+            .populate('teamLead', ['name', 'email']);
 
         if (!task) {
             return res.status(404).json({ msg: 'Task not found' });
@@ -104,19 +113,20 @@ exports.getTaskById = async (req, res) => {
 // @access  Private (Admin only)
 exports.updateTask = async (req, res) => {
     try {
-        const { name, description, project, assignedTo, dueDate, status, priority } = req.body;
+        const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
 
         const taskFields = {};
         if (name) taskFields.name = name;
         if (description) taskFields.description = description;
         if (project) taskFields.project = project;
-        if (assignedTo) taskFields.assignedTo = assignedTo;
+        if (assignedMembers) taskFields.assignedMembers = assignedMembers;
+        if (teamLead) taskFields.teamLead = teamLead;
+        if (milestones) taskFields.milestones = milestones;
         if (dueDate) taskFields.dueDate = dueDate;
         if (status) taskFields.status = status;
         if (priority) taskFields.priority = priority;
 
         let task = await Task.findById(req.params.id);
-
         if (!task) return res.status(404).json({ msg: 'Task not found' });
 
         task = await Task.findByIdAndUpdate(
@@ -128,9 +138,6 @@ exports.updateTask = async (req, res) => {
         res.json(task);
     } catch (err) {
         console.error(err.message);
-        if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Task not found' });
-        }
         res.status(500).send('Server Error');
     }
 };
@@ -141,19 +148,11 @@ exports.updateTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
     try {
         const task = await Task.findById(req.params.id);
-
-        if (!task) {
-            return res.status(404).json({ msg: 'Task not found' });
-        }
-
-        await task.deleteOne({ _id: req.params.id });
-
+        if (!task) return res.status(404).json({ msg: 'Task not found' });
+        await task.deleteOne();
         res.json({ msg: 'Task removed' });
     } catch (err) {
         console.error(err.message);
-        if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Task not found' });
-        }
         res.status(500).send('Server Error');
     }
 };
@@ -165,52 +164,59 @@ exports.updateTaskStatus = async (req, res) => {
     try {
         const { status } = req.body;
 
-        let task = await Task.findById(req.params.id).populate('assignedTo', ['name', 'email']);
+        let task = await Task.findById(req.params.id).populate('teamLead assignedMembers');
         if (!task) return res.status(404).json({ msg: 'Task not found' });
 
-        // Check if user is Admin or the assignee
-        if (req.user.role !== 'Admin' && (!task.assignedTo || task.assignedTo._id.toString() !== req.user.id)) {
-            return res.status(403).json({ msg: 'User not authorized to update this task' });
+        // Admin, Team Lead, or Member can update
+        const isMember = task.assignedMembers.some(m => m._id.toString() === req.user.id);
+        const isLead = task.teamLead && task.teamLead._id.toString() === req.user.id;
+
+        if (req.user.role !== 'Admin' && (!isLead && !isMember)) {
+            return res.status(403).json({ msg: 'Not authorized to update status' });
         }
 
-        const oldStatus = task.status;
         task.status = status;
         await task.save();
-
-        // If status changed to Completed, notify Admin
-        if (status === 'Completed' && oldStatus !== 'Completed') {
-            const admins = await User.find({ role: 'Admin' });
-            for (const admin of admins) {
-                if (admin.email) {
-                    await sendEmail({
-                        email: admin.email,
-                        subject: `Task Completed: ${task.name}`,
-                        message: `The task "${task.name}" has been marked as completed by ${task.assignedTo?.name || 'an intern'}.`,
-                        html: `
-                            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                                <h2 style="color: #10b981;">Task Successfully Completed</h2>
-                                <p>Hello <strong>${admin.name}</strong>,</p>
-                                <p>A task in your agency has been finalized:</p>
-                                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #d1fae5;">
-                                    <h3 style="margin-top: 0; color: #065f46;">${task.name}</h3>
-                                    <p style="color: #065f46; font-size: 14px; margin-bottom: 0;">Completed By: <strong>${task.assignedTo?.name || 'Team Member'}</strong></p>
-                                </div>
-                                <p>You can now review the deliverables in the project hub.</p>
-                                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                                <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
-                            </div>
-                        `
-                    });
-                }
-            }
-        }
-
         res.json(task);
     } catch (err) {
         console.error(err.message);
-        if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Task not found' });
-        }
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Toggle Milestone Completion
+// @route   PATCH /api/tasks/:id/milestones/:milestoneId
+// @access  Private
+exports.toggleMilestone = async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) return res.status(404).json({ msg: 'Task not found' });
+
+        const isLead = task.teamLead && task.teamLead.toString() === req.user.id;
+
+        if (req.user.role !== 'Admin' && !isLead) {
+            return res.status(403).json({ msg: 'Only the Team Lead and Administrators can check milestones.' });
+        }
+
+
+        const milestone = task.milestones.id(req.params.milestoneId);
+        if (!milestone) return res.status(404).json({ msg: 'Milestone not found' });
+
+        milestone.completed = !milestone.completed;
+        
+        // Auto-update task status if milestones change
+        const allCompleted = task.milestones.every(m => m.completed);
+        if (allCompleted && task.status !== 'Completed') {
+            task.status = 'Completed';
+        } else if (!allCompleted && task.status === 'Completed') {
+            task.status = 'In Progress';
+        }
+
+        await task.save();
+        res.json(task);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+

@@ -12,8 +12,10 @@ const Clients = lazy(() => import('./pages/Clients'));
 const Projects = lazy(() => import('./pages/Projects'));
 const Invoices = lazy(() => import('./pages/Invoices'));
 const Tasks = lazy(() => import('./pages/Tasks'));
+const TaskProgress = lazy(() => import('./pages/TaskProgress'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Layout = lazy(() => import('./components/Layout'));
+
 
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useContext(AuthContext);
@@ -46,8 +48,10 @@ function App() {
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/tasks" element={<Tasks />} />
+                <Route path="/tasks/:id/progress" element={<TaskProgress />} />
                 <Route path="/analytics" element={<Analytics />} />
               </Route>
+
 
               <Route path="/" element={<Navigate to="/login" />} />
             </Routes>
