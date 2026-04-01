@@ -20,11 +20,11 @@ const Register = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        const success = await register(name, email, password, role);
-        if (success) {
+        const result = await register(name, email, password, role);
+        if (result.success) {
             navigate('/dashboard');
         } else {
-            alert('Registration failed. This might be because the email is already in use or the server is down. Please try again.');
+            alert(`Registration failed: ${result.msg || 'Please try again.'}`);
         }
     };
 

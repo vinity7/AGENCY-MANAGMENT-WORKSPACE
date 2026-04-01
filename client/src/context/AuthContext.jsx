@@ -31,10 +31,11 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('user', JSON.stringify(res.data.user));
             setToken(res.data.token);
             setUser(res.data.user);
-            return true;
+            return { success: true };
         } catch (err) {
             console.error('Login Error:', err.response?.data || err.message);
-            return false;
+            const errorMsg = err.response?.data?.msg || err.response?.data?.error || err.message;
+            return { success: false, msg: errorMsg };
         }
     };
 
@@ -47,10 +48,11 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('user', JSON.stringify(res.data.user));
             setToken(res.data.token);
             setUser(res.data.user);
-            return true;
+            return { success: true };
         } catch (err) {
             console.error('Register Error Details:', err.response?.data || err.message);
-            return false;
+            const errorMsg = err.response?.data?.msg || err.response?.data?.error || err.message;
+            return { success: false, msg: errorMsg };
         }
     };
 

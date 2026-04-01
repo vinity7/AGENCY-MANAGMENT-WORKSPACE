@@ -18,9 +18,11 @@ const Login = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        const success = await login(email, password);
-        if (success) {
+        const result = await login(email, password);
+        if (result.success) {
             navigate('/dashboard');
+        } else {
+            alert(`Login failed: ${result.msg || 'Invalid credentials'}`);
         }
     };
 
