@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: agencyos
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    buildCommand: ""
+    startCommand: "node index.js"
+    envVars:
+      - key: PORT
+        value: "5001"
+      - key: MONGO_URI
+        fromDatabase:
+          name: agencyos-mongo
+          property: connectionString
+      - key: JWT_SECRET
+        value: "${JWT_SECRET}"
+      - key: EMAIL_HOST
+        value: "${EMAIL_HOST}"
+      - key: EMAIL_PORT
+        value: "${EMAIL_PORT}"
+      - key: EMAIL_USER
+        value: "${EMAIL_USER}"
+      - key: EMAIL_PASS
+        value: "${EMAIL_PASS}"
+    autoDeploy: true
+    healthCheckPath: "/health"
+    healthCheckTimeout: 10
+    healthCheckInterval: 30
+    healthCheckProtocol: http
