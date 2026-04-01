@@ -34,7 +34,9 @@ export const AuthProvider = ({ children }) => {
             return { success: true };
         } catch (err) {
             console.error('Login Error:', err.response?.data || err.message);
-            const errorMsg = err.response?.data?.msg || err.response?.data?.error || err.message;
+            const serverMsg = err.response?.data?.msg || '';
+            const serverErr = err.response?.data?.error || '';
+            const errorMsg = serverMsg && serverErr ? `${serverMsg} (${serverErr})` : (serverMsg || serverErr || err.message);
             return { success: false, msg: errorMsg };
         }
     };
@@ -51,7 +53,9 @@ export const AuthProvider = ({ children }) => {
             return { success: true };
         } catch (err) {
             console.error('Register Error Details:', err.response?.data || err.message);
-            const errorMsg = err.response?.data?.msg || err.response?.data?.error || err.message;
+            const serverMsg = err.response?.data?.msg || '';
+            const serverErr = err.response?.data?.error || '';
+            const errorMsg = serverMsg && serverErr ? `${serverMsg} (${serverErr})` : (serverMsg || serverErr || err.message);
             return { success: false, msg: errorMsg };
         }
     };

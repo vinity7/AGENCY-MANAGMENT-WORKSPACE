@@ -27,6 +27,15 @@ exports.registerUser = async (req, res) => {
         await user.save();
         console.log('User saved successfully');
 
+        // Verify JWT Secret existence
+        if (!process.env.JWT_SECRET) {
+            console.error('CRITICAL ERROR: JWT_SECRET is missing from environment variables.');
+            return res.status(500).json({ 
+                msg: 'Server configuration error', 
+                error: 'JWT_SECRET is required' 
+            });
+        }
+
         // Create JWT Payload
         const payload = {
             user: {
