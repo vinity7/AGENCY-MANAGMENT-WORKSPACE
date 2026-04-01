@@ -82,6 +82,16 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
+// Startup validation for production
+if (process.env.NODE_ENV === 'production') {
+    if (!process.env.MONGO_URI && !process.env.MONGO_URL) {
+        console.error('CRITICAL: MONGO_URI is missing from Render Environment Variables.');
+    }
+    if (!process.env.JWT_SECRET) {
+        console.error('CRITICAL: JWT_SECRET is missing from Render Environment Variables.');
+    }
+}
+
 
 // Define Routes
 

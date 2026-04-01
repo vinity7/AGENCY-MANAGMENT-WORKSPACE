@@ -37,7 +37,7 @@ exports.registerUser = async (req, res) => {
 
         jwt.sign(
             payload,
-            process.env.JWT_SECRET || 'mysecrettoken',
+            process.env.JWT_SECRET,
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) {
@@ -49,7 +49,10 @@ exports.registerUser = async (req, res) => {
         );
     } catch (err) {
         console.error('Registration Catch Error:', err);
-        res.status(500).send('Server Error');
+        res.status(500).json({ 
+            msg: 'Registration Server Error', 
+            error: process.env.NODE_ENV === 'production' ? err.message : err 
+        });
     }
 };
 
@@ -82,7 +85,7 @@ exports.loginUser = async (req, res) => {
 
         jwt.sign(
             payload,
-            process.env.JWT_SECRET || 'mysecrettoken',
+            process.env.JWT_SECRET,
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
@@ -90,8 +93,11 @@ exports.loginUser = async (req, res) => {
             }
         );
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Login Error:', err.message);
+        res.status(500).json({ 
+            msg: 'Login Server Error', 
+            error: process.env.NODE_ENV === 'production' ? err.message : err 
+        });
     }
 };
 
