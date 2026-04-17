@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Briefcase, FileText, CheckSquare, LogOut, LayoutGrid } from 'lucide-react';
+import { Home, Users, Briefcase, FileText, CheckSquare, LogOut, LayoutGrid, Settings } from 'lucide-react';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -19,6 +19,7 @@ const Sidebar = () => {
 
     if (user?.role === 'Admin') {
         navItems.push({ name: 'Analytics', path: '/analytics', icon: <LayoutGrid size={18} /> });
+        navItems.push({ name: 'Organization', path: '/organization', icon: <Settings size={18} /> });
     }
 
     return (

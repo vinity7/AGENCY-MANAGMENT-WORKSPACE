@@ -4,7 +4,7 @@ const sendEmail = require('../utils/emailService');
 
 // @desc    Create a new invoice
 // @route   POST /api/invoices
-// @access  Public
+// @access  Private (Admin only)
 exports.createInvoice = async (req, res) => {
     try {
         const { client, project, amount, issueDate, dueDate, status } = req.body;
@@ -16,6 +16,7 @@ exports.createInvoice = async (req, res) => {
             issueDate,
             dueDate,
             status,
+            orgId: req.user.orgId,
         });
 
         const invoice = await newInvoice.save();
@@ -26,12 +27,12 @@ exports.createInvoice = async (req, res) => {
     }
 };
 
-// @desc    Get all invoices
+// @desc    Get all invoices for organization
 // @route   GET /api/invoices
-// @access  Public
+// @access  Private
 exports.getInvoices = async (req, res) => {
     try {
-        const invoices = await Invoice.find()
+        const invoices = await Invoice.find({ orgId: req.user.orgId })
             .populate('client', ['name', 'email'])
             .populate('project', ['name', 'status'])
             .sort({ issueDate: -1 });
@@ -42,17 +43,17 @@ exports.getInvoices = async (req, res) => {
     }
 };
 
-// @desc    Get invoice by ID
+// @desc    Get invoice by ID within organization
 // @route   GET /api/invoices/:id
-// @access  Public
+// @access  Private
 exports.getInvoiceById = async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id)
+        const invoice = await Invoice.findOne({ _id: req.params.id, orgId: req.user.orgId })
             .populate('client', ['name', 'email'])
             .populate('project', ['name', 'status']);
 
         if (!invoice) {
-            return res.status(404).json({ msg: 'Invoice not found' });
+            return res.status(404).json({ msg: 'Invoice not found or access denied' });
         }
 
         res.json(invoice);
@@ -65,12 +66,18 @@ exports.getInvoiceById = async (req, res) => {
     }
 };
 
-// @desc    Update invoice
+// @desc    Update invoice within organization
 // @route   PUT /api/invoices/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.updateInvoice = async (req, res) => {
     try {
         const { client, project, amount, issueDate, dueDate, status } = req.body;
+
+        let invoice = await Invoice.findOne({ _id: req.params.id, orgId: req.user.orgId }).populate('client', ['name']);
+
+        if (!invoice) return res.status(404).json({ msg: 'Invoice not found or access denied' });
+
+        const oldStatus = invoice.status;
 
         const invoiceFields = {};
         if (client) invoiceFields.client = client;
@@ -80,43 +87,41 @@ exports.updateInvoice = async (req, res) => {
         if (dueDate) invoiceFields.dueDate = dueDate;
         if (status) invoiceFields.status = status;
 
-        let invoice = await Invoice.findById(req.params.id).populate('client', ['name']);
-
-        if (!invoice) return res.status(404).json({ msg: 'Invoice not found' });
-
-        const oldStatus = invoice.status;
-
         invoice = await Invoice.findByIdAndUpdate(
             req.params.id,
             { $set: invoiceFields },
             { new: true }
         ).populate('client', ['name']).populate('project', ['name']);
 
-        // Send Email Notification if status changed to Paid
+        // Send Email Notification if status changed to Paid (to Admins of the SAME organization)
         if (status === 'Paid' && oldStatus !== 'Paid') {
-            const admins = await User.find({ role: 'Admin' });
+            const admins = await User.find({ role: 'Admin', orgId: req.user.orgId });
             for (const admin of admins) {
                 if (admin.email) {
-                    await sendEmail({
-                        email: admin.email,
-                        subject: `Payment Received: Invoice for ${invoice.client?.name}`,
-                        message: `The invoice for project "${invoice.project?.name}" has been marked as Paid. Amount: $${invoice.amount}`,
-                        html: `
-                            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                                <h2 style="color: #059669;">Payment Confirmed</h2>
-                                <p>Hello <strong>${admin.name}</strong>,</p>
-                                <p>Good news! An invoice has been settled by your client:</p>
-                                <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #a7f3d0;">
-                                    <h3 style="margin-top: 0; color: #047857;">Invoice for ${invoice.client?.name}</h3>
-                                    <p style="margin: 5px 0; color: #047857;">Project: <strong>${invoice.project?.name}</strong></p>
-                                    <p style="font-size: 18px; font-weight: bold; color: #047857; margin-bottom: 0;">Amount: $${invoice.amount}</p>
+                    try {
+                        await sendEmail({
+                            email: admin.email,
+                            subject: `Payment Received: Invoice for ${invoice.client?.name}`,
+                            message: `The invoice for project "${invoice.project?.name}" has been marked as Paid. Amount: $${invoice.amount}`,
+                            html: `
+                                <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                                    <h2 style="color: #059669;">Payment Confirmed</h2>
+                                    <p>Hello <strong>${admin.name}</strong>,</p>
+                                    <p>Good news! An invoice has been settled by your client:</p>
+                                    <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #a7f3d0;">
+                                        <h3 style="margin-top: 0; color: #047857;">Invoice for ${invoice.client?.name}</h3>
+                                        <p style="margin: 5px 0; color: #047857;">Project: <strong>${invoice.project?.name}</strong></p>
+                                        <p style="font-size: 18px; font-weight: bold; color: #047857; margin-bottom: 0;">Amount: $${invoice.amount}</p>
+                                    </div>
+                                    <p>This transaction has been recorded in your financial dashboard.</p>
+                                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                                    <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
                                 </div>
-                                <p>This transaction has been recorded in your financial dashboard.</p>
-                                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                                <small style="color: #94a3b8;">This is an automated notification from Agency Mgr.</small>
-                            </div>
-                        `
-                    });
+                            `
+                        });
+                    } catch (emailErr) {
+                        console.error(`Failed to send invoice email to ${admin.email}:`, emailErr);
+                    }
                 }
             }
         }
@@ -131,19 +136,18 @@ exports.updateInvoice = async (req, res) => {
     }
 };
 
-// @desc    Delete invoice
+// @desc    Delete invoice within organization
 // @route   DELETE /api/invoices/:id
-// @access  Public
+// @access  Private (Admin only)
 exports.deleteInvoice = async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id);
+        const invoice = await Invoice.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
         if (!invoice) {
-            return res.status(404).json({ msg: 'Invoice not found' });
+            return res.status(404).json({ msg: 'Invoice not found or access denied' });
         }
 
-        await invoice.deleteOne({ _id: req.params.id });
-
+        await invoice.deleteOne();
         res.json({ msg: 'Invoice removed' });
     } catch (err) {
         console.error(err.message);

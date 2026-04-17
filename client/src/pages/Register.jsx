@@ -8,19 +8,19 @@ const Register = () => {
         name: '',
         email: '',
         password: '',
-        role: 'Intern',
+        organizationName: '',
     });
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const { name, email, password, role } = formData;
+    const { name, email, password, organizationName } = formData;
 
     const onChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        const result = await register(name, email, password, role);
+        const result = await register(name, email, password, organizationName);
         if (result.success) {
             navigate('/dashboard');
         } else {
@@ -82,16 +82,16 @@ const Register = () => {
                         </div>
 
                         <div className="input-container">
-                            <label className="field-label">Role</label>
-                            <select
-                                name="role"
-                                value={role}
+                            <label className="field-label">Organization Name</label>
+                            <input
+                                type="text"
+                                name="organizationName"
+                                value={organizationName}
                                 onChange={onChange}
-                                className="custom-select"
-                            >
-                                <option value="Intern">Intern</option>
-                                <option value="Admin">Admin</option>
-                            </select>
+                                placeholder="Your Agency Name"
+                                className="custom-input"
+                                required
+                            />
                         </div>
 
                         <button type="submit" className="submit-btn">

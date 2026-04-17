@@ -17,8 +17,12 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Admin', 'Intern'],
-        default: 'Intern',
+        enum: ['Admin', 'Lead', 'Client'],
+        default: 'Lead',
+    },
+    orgId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
     },
     createdAt: {
         type: Date,
@@ -27,9 +31,9 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
 
     const salt = await bcrypt.genSalt(10);

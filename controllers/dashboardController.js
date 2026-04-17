@@ -3,21 +3,23 @@ const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Invoice = require('../models/Invoice');
 
-// @desc    Get dashboard stats
+// @desc    Get dashboard stats for organization
 // @route   GET /api/dashboard/stats
-// @access  Public (Should be Private in production)
+// @access  Private
 exports.getDashboardStats = async (req, res) => {
     try {
-        const clientsCount = await Client.countDocuments();
-        const projectsCount = await Project.countDocuments();
-        const tasksCount = await Task.countDocuments();
-        const invoicesCount = await Invoice.countDocuments();
+        const orgFilter = { orgId: req.user.orgId };
 
-        const pendingTasks = await Task.countDocuments({ status: 'Pending' });
-        const completedTasks = await Task.countDocuments({ status: 'Completed' });
+        const clientsCount = await Client.countDocuments(orgFilter);
+        const projectsCount = await Project.countDocuments(orgFilter);
+        const tasksCount = await Task.countDocuments(orgFilter);
+        const invoicesCount = await Invoice.countDocuments(orgFilter);
 
-        const activeProjects = await Project.find().limit(5).sort({ createdAt: -1 });
-        const recentTasks = await Task.find().populate('project', 'name').limit(5).sort({ createdAt: -1 });
+        const pendingTasks = await Task.countDocuments({ ...orgFilter, status: 'Pending' });
+        const completedTasks = await Task.countDocuments({ ...orgFilter, status: 'Completed' });
+
+        const activeProjects = await Project.find(orgFilter).limit(5).sort({ createdAt: -1 });
+        const recentTasks = await Task.find(orgFilter).populate('project', 'name').limit(5).sort({ createdAt: -1 });
 
         res.json({
             counts: {

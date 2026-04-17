@@ -3,23 +3,28 @@ const Project = require('../models/Project');
 const Invoice = require('../models/Invoice');
 const User = require('../models/User');
 
-// @desc    Get intern productivity metrics
+// @desc    Get productivity metrics for organization users
 // @route   GET /api/analytics/productivity
 // @access  Private (Admin)
 exports.getProductivity = async (req, res) => {
     try {
-        const interns = await User.find({ role: 'Intern' });
-        const productivity = await Promise.all(interns.map(async (intern) => {
+        // Leads and Admins both represent the "workforce" in this context
+        const users = await User.find({ orgId: req.user.orgId, role: { $ne: 'Client' } });
+        
+        const productivity = await Promise.all(users.map(async (user) => {
             const completedTasks = await Task.countDocuments({
-                assignedTo: intern._id,
+                assignedMembers: user._id,
+                orgId: req.user.orgId,
                 status: 'Completed'
             });
             const pendingTasks = await Task.countDocuments({
-                assignedTo: intern._id,
+                assignedMembers: user._id,
+                orgId: req.user.orgId,
                 status: { $ne: 'Completed' }
             });
             return {
-                name: intern.name,
+                name: user.name,
+                role: user.role,
                 completed: completedTasks,
                 pending: pendingTasks
             };
@@ -31,12 +36,12 @@ exports.getProductivity = async (req, res) => {
     }
 };
 
-// @desc    Get revenue forecasting
+// @desc    Get revenue forecasting for organization
 // @route   GET /api/analytics/revenue
-// @access  Private (Admin)
+// @access  Private (Admin only)
 exports.getRevenueForecast = async (req, res) => {
     try {
-        const invoices = await Invoice.find();
+        const invoices = await Invoice.find({ orgId: req.user.orgId });
 
         const paidRevenue = invoices
             .filter(inv => inv.status === 'Paid')
@@ -45,9 +50,6 @@ exports.getRevenueForecast = async (req, res) => {
         const pendingRevenue = invoices
             .filter(inv => inv.status === 'Pending')
             .reduce((sum, inv) => sum + inv.amount, 0);
-
-        // Projected from active projects (simple logic: sum of all pending invoices linked or not)
-        // For a more complex forecast, we could look at project budgets if they existed.
 
         res.json({
             actual: paidRevenue,
@@ -60,12 +62,12 @@ exports.getRevenueForecast = async (req, res) => {
     }
 };
 
-// @desc    Get project metrics
+// @desc    Get project metrics for organization
 // @route   GET /api/analytics/projects
-// @access  Private (Admin)
+// @access  Private (Admin or Lead)
 exports.getProjectMetrics = async (req, res) => {
     try {
-        const projects = await Project.find();
+        const projects = await Project.find({ orgId: req.user.orgId });
         const completed = projects.filter(p => p.status === 'Completed').length;
         const inProgress = projects.filter(p => p.status === 'In Progress').length;
         const delayed = projects.filter(p => p.status !== 'Completed' && new Date(p.endDate) < new Date()).length;

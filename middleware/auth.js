@@ -13,6 +13,12 @@ module.exports = function (req, res, next) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded.user;
+        
+        // Ensure orgId and role are present for multi-tenant apps
+        if (!req.user.orgId || !req.user.role) {
+            return res.status(401).json({ msg: 'Token missing tenant or role information' });
+        }
+        
         next();
     } catch (err) {
         res.status(401).json({ msg: 'Token is not valid' });

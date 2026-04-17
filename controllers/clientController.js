@@ -5,10 +5,6 @@ const Client = require('../models/Client');
 // @access  Private (Admin only)
 exports.createClient = async (req, res) => {
     try {
-        console.log('--- Creating Client ---');
-        console.log('User:', req.user);
-        console.log('Body:', req.body);
-
         const { name, email, phone, companyName, address, status } = req.body;
 
         const newClient = new Client({
@@ -18,27 +14,26 @@ exports.createClient = async (req, res) => {
             companyName,
             address,
             status,
+            orgId: req.user.orgId, // Mandatory for multi-tenancy
         });
 
         const client = await newClient.save();
-        console.log('Client saved successfully:', client._id);
         res.status(201).json(client);
     } catch (err) {
         if (err.code === 11000) {
-            console.log('Create Client failed: Email exists');
             return res.status(400).json({ msg: 'Email already exists' });
         }
-        console.error('Create Client Catch Error:', err);
+        console.error('Create Client Error:', err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
-// @desc    Get all clients
+// @desc    Get all clients for the organization
 // @route   GET /api/clients
-// @access  Public
+// @access  Private
 exports.getClients = async (req, res) => {
     try {
-        const clients = await Client.find().sort({ createdAt: -1 });
+        const clients = await Client.find({ orgId: req.user.orgId }).sort({ createdAt: -1 });
         res.json(clients);
     } catch (err) {
         console.error(err.message);
@@ -46,15 +41,15 @@ exports.getClients = async (req, res) => {
     }
 };
 
-// @desc    Get client by ID
+// @desc    Get client by ID within organization
 // @route   GET /api/clients/:id
-// @access  Public
+// @access  Private
 exports.getClientById = async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id);
+        const client = await Client.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
         if (!client) {
-            return res.status(404).json({ msg: 'Client not found' });
+            return res.status(404).json({ msg: 'Client not found or access denied' });
         }
 
         res.json(client);
@@ -67,7 +62,7 @@ exports.getClientById = async (req, res) => {
     }
 };
 
-// @desc    Update client
+// @desc    Update client within organization
 // @route   PUT /api/clients/:id
 // @access  Private (Admin only)
 exports.updateClient = async (req, res) => {
@@ -82,9 +77,9 @@ exports.updateClient = async (req, res) => {
         if (address) clientFields.address = address;
         if (status) clientFields.status = status;
 
-        let client = await Client.findById(req.params.id);
+        let client = await Client.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
-        if (!client) return res.status(404).json({ msg: 'Client not found' });
+        if (!client) return res.status(404).json({ msg: 'Client not found or access denied' });
 
         client = await Client.findByIdAndUpdate(
             req.params.id,
@@ -102,18 +97,18 @@ exports.updateClient = async (req, res) => {
     }
 };
 
-// @desc    Delete client
+// @desc    Delete client within organization
 // @route   DELETE /api/clients/:id
 // @access  Private (Admin only)
 exports.deleteClient = async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id);
+        const client = await Client.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
         if (!client) {
-            return res.status(404).json({ msg: 'Client not found' });
+            return res.status(404).json({ msg: 'Client not found or access denied' });
         }
 
-        await client.deleteOne({ _id: req.params.id });
+        await client.deleteOne();
 
         res.json({ msg: 'Client removed' });
     } catch (err) {

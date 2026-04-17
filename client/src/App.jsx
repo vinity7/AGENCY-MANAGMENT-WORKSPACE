@@ -14,6 +14,7 @@ const Invoices = lazy(() => import('./pages/Invoices'));
 const Tasks = lazy(() => import('./pages/Tasks'));
 const TaskProgress = lazy(() => import('./pages/TaskProgress'));
 const Analytics = lazy(() => import('./pages/Analytics'));
+const Organization = lazy(() => import('./pages/Organization'));
 const Layout = lazy(() => import('./components/Layout'));
 
 
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/tasks/:id/progress" element={<TaskProgress />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/organization" element={<Organization />} />
               </Route>
 
 

@@ -4,10 +4,9 @@ const sendEmail = require('../utils/emailService');
 
 // @desc    Create a new task
 // @route   POST /api/tasks
-// @access  Private (Admin only)
+// @access  Private (Admin or Lead)
 exports.createTask = async (req, res) => {
     try {
-        console.log('--- Creating Team Task ---');
         const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
 
         const newTask = new Task({
@@ -20,12 +19,12 @@ exports.createTask = async (req, res) => {
             dueDate,
             status,
             priority: priority || 'Medium',
+            orgId: req.user.orgId,
         });
 
         const task = await newTask.save();
-        console.log('Task saved successfully:', task._id);
 
-        // Send Email Notification to Team Lead and Members (Non-blocking)
+        // Send Email Notification to Team Lead and Members
         const notifyIdsSet = new Set();
         if (Array.isArray(task.assignedMembers)) {
             task.assignedMembers.forEach(id => notifyIdsSet.add(id.toString()));
@@ -37,16 +36,15 @@ exports.createTask = async (req, res) => {
         const notifyIds = Array.from(notifyIdsSet);
 
         if (notifyIds.length > 0) {
-            // We don't await the entire email block to avoid slowing down the response
-            User.find({ _id: { $in: notifyIds } })
+            User.find({ _id: { $in: notifyIds }, orgId: req.user.orgId })
                 .then(async (users) => {
                     for (const user of users) {
                         if (user.email) {
                             try {
                                 await sendEmail({
                                     email: user.email,
-                                    subject: `New Team Assignment: ${name}`,
-                                    message: `Hello ${user.name},\n\nYou have been assigned to the team for the task: ${name}.\n\nLead: ${teamLead ? 'Specified' : 'Not assigned'}\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard to track milestones.`,
+                                    subject: `New Task Assignment: ${name}`,
+                                    message: `Hello ${user.name},\n\nYou have been assigned to the task: ${name}.\n\nLead: ${teamLead ? 'Specified' : 'Not assigned'}\nDescription: ${description || 'No description provided'}\nDue Date: ${dueDate || 'N/A'}\n\nPlease check your dashboard to track milestones.`,
                                     html: `
                                         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                                             <h2 style="color: #2563eb;">New Task Allocation: ${name}</h2>
@@ -79,12 +77,12 @@ exports.createTask = async (req, res) => {
     }
 };
 
-// @desc    Get all tasks
+// @desc    Get all tasks for the organization
 // @route   GET /api/tasks
-// @access  Public
+// @access  Private
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find()
+        const tasks = await Task.find({ orgId: req.user.orgId })
             .populate('project', ['name', 'status'])
             .populate('assignedMembers', ['name', 'email'])
             .populate('teamLead', ['name', 'email'])
@@ -96,18 +94,18 @@ exports.getTasks = async (req, res) => {
     }
 };
 
-// @desc    Get task by ID
+// @desc    Get task by ID within organization
 // @route   GET /api/tasks/:id
-// @access  Public
+// @access  Private
 exports.getTaskById = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id)
+        const task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId })
             .populate('project', ['name', 'description', 'status'])
             .populate('assignedMembers', ['name', 'email'])
             .populate('teamLead', ['name', 'email']);
 
         if (!task) {
-            return res.status(404).json({ msg: 'Task not found' });
+            return res.status(404).json({ msg: 'Task not found or access denied' });
         }
 
         res.json(task);
@@ -120,12 +118,15 @@ exports.getTaskById = async (req, res) => {
     }
 };
 
-// @desc    Update task
+// @desc    Update task within organization
 // @route   PUT /api/tasks/:id
-// @access  Private (Admin only)
+// @access  Private (Admin or Lead)
 exports.updateTask = async (req, res) => {
     try {
         const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
+
+        let task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId });
+        if (!task) return res.status(404).json({ msg: 'Task not found or access denied' });
 
         const taskFields = {};
         if (name) taskFields.name = name;
@@ -137,9 +138,6 @@ exports.updateTask = async (req, res) => {
         if (dueDate) taskFields.dueDate = dueDate;
         if (status) taskFields.status = status;
         if (priority) taskFields.priority = priority;
-
-        let task = await Task.findById(req.params.id);
-        if (!task) return res.status(404).json({ msg: 'Task not found' });
 
         task = await Task.findByIdAndUpdate(
             req.params.id,
@@ -154,13 +152,14 @@ exports.updateTask = async (req, res) => {
     }
 };
 
-// @desc    Delete task
+// @desc    Delete task within organization
 // @route   DELETE /api/tasks/:id
 // @access  Private (Admin only)
 exports.deleteTask = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
-        if (!task) return res.status(404).json({ msg: 'Task not found' });
+        const task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId });
+        if (!task) return res.status(404).json({ msg: 'Task not found or access denied' });
+        
         await task.deleteOne();
         res.json({ msg: 'Task removed' });
     } catch (err) {
@@ -169,15 +168,17 @@ exports.deleteTask = async (req, res) => {
     }
 };
 
-// @desc    Update task status
+// @desc    Update task status within organization
 // @route   PATCH /api/tasks/:id/status
 // @access  Private
 exports.updateTaskStatus = async (req, res) => {
     try {
         const { status } = req.body;
 
-        let task = await Task.findById(req.params.id).populate('teamLead assignedMembers');
-        if (!task) return res.status(404).json({ msg: 'Task not found' });
+        let task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId })
+            .populate('teamLead assignedMembers');
+            
+        if (!task) return res.status(404).json({ msg: 'Task not found or access denied' });
 
         // Admin, Team Lead, or Member can update
         const isMember = task.assignedMembers.some(m => m._id.toString() === req.user.id);
@@ -190,7 +191,6 @@ exports.updateTaskStatus = async (req, res) => {
         task.status = status;
         await task.save();
         
-        // Populate before returning
         const populatedTask = await Task.findById(task._id)
             .populate('project', ['name', 'description', 'status'])
             .populate('assignedMembers', ['name', 'email'])
@@ -208,8 +208,8 @@ exports.updateTaskStatus = async (req, res) => {
 // @access  Private
 exports.toggleMilestone = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id);
-        if (!task) return res.status(404).json({ msg: 'Task not found' });
+        const task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId });
+        if (!task) return res.status(404).json({ msg: 'Task not found or access denied' });
 
         const isLead = task.teamLead && task.teamLead.toString() === req.user.id;
 
@@ -217,13 +217,11 @@ exports.toggleMilestone = async (req, res) => {
             return res.status(403).json({ msg: 'Only the Team Lead and Administrators can check milestones.' });
         }
 
-
         const milestone = task.milestones.id(req.params.milestoneId);
         if (!milestone) return res.status(404).json({ msg: 'Milestone not found' });
 
         milestone.completed = !milestone.completed;
         
-        // Auto-update task status if milestones change
         const allCompleted = task.milestones.every(m => m.completed);
         if (allCompleted && task.status !== 'Completed') {
             task.status = 'Completed';
@@ -233,7 +231,6 @@ exports.toggleMilestone = async (req, res) => {
 
         await task.save();
 
-        // Populate before returning
         const populatedTask = await Task.findById(task._id)
             .populate('project', ['name', 'description', 'status'])
             .populate('assignedMembers', ['name', 'email'])
@@ -245,4 +242,3 @@ exports.toggleMilestone = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
