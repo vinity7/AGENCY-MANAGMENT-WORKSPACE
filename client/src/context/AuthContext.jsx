@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import api from '../api/axios';
+import { isAtLeast, getDashboardType } from '../utils/roleHelpers';
 
 export const AuthContext = createContext();
 
@@ -69,8 +70,21 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    // Role-based helper methods
+    const checkIsAtLeast = (requiredRole) => isAtLeast(user?.role, requiredRole);
+    const dashboardType = getDashboardType(user?.role);
+
     return (
-        <AuthContext.Provider value={{ user, token, register, login, logout, loading }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            token, 
+            register, 
+            login, 
+            logout, 
+            loading,
+            isAtLeast: checkIsAtLeast,
+            dashboardType
+        }}>
             {children}
         </AuthContext.Provider>
     );

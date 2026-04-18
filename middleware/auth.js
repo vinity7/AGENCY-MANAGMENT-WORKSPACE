@@ -26,12 +26,11 @@ module.exports = function (req, res, next) {
 };
 
 module.exports.admin = function (req, res, next) {
-    console.log('Checking admin role for user:', req.user);
-    if (req.user && req.user.role === 'Admin') {
+    const role = req.user?.role?.toLowerCase();
+    if (role === 'admin' || role === 'owner') {
         next();
     } else {
-        console.log('Admin access denied. Role:', req.user?.role);
-        res.status(403).json({ msg: 'Access denied: Requires Admin role' });
+        res.status(403).json({ msg: 'Access denied: Requires Admin/Owner role' });
     }
 };
 

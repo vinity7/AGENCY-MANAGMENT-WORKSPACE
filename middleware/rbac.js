@@ -5,12 +5,17 @@
 // Allow only specific roles
 exports.authorize = (...roles) => {
     return (req, res, next) => {
-        if (!req.user || !roles.includes(req.user.role)) {
+        const userRole = req.user?.role?.toLowerCase();
+        const normalizedRoles = roles.map(r => r.toLowerCase());
+        
+        // Owner always has access
+        if (userRole === 'owner' || normalizedRoles.includes(userRole)) {
+            next();
+        } else {
             return res.status(403).json({
                 msg: `Role '${req.user?.role}' is not authorized to access this resource`
             });
         }
-        next();
     };
 };
 

@@ -11,6 +11,10 @@ const OrganizationSchema = new mongoose.Schema({
         enum: ['Free', 'Pro', 'Enterprise'],
         default: 'Free',
     },
+    maxUsers: {
+        type: Number,
+        default: 20, // Default limit per your request
+    },
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

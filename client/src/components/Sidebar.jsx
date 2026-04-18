@@ -17,7 +17,10 @@ const Sidebar = () => {
         { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} /> },
     ];
 
-    if (user?.role === 'Admin') {
+    const userRole = user?.role?.toLowerCase();
+    const isManager = ['admin', 'owner', 'product_owner', 'product_manager'].includes(userRole);
+
+    if (isManager) {
         navItems.push({ name: 'Analytics', path: '/analytics', icon: <LayoutGrid size={18} /> });
         navItems.push({ name: 'Organization', path: '/organization', icon: <Settings size={18} /> });
     }

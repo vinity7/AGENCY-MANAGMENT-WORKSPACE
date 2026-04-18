@@ -28,6 +28,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/email', require('./routes/emailRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/v1/organizations', require('./routes/teamRoutes'));
 
 // Health check endpoint for Render/Deployment platforms
 app.get('/health', (req, res) => {
