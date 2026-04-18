@@ -44,6 +44,16 @@ const TaskSchema = new mongoose.Schema({
         ref: 'Organization',
         required: true,
     },
+    feedback: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        text: String,
+        type: { type: String, enum: ['comment', 'Technical Constraint', 'Requirement Gap', 'rejection'] },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    dodChecklist: [{
+        item: { type: String, required: true },
+        completed: { type: Boolean, default: false }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

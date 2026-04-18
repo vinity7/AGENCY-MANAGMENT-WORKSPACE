@@ -112,7 +112,7 @@ const Invoices = () => {
                     <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Invoices</h1>
                     <p className="text-slate-500 mt-1 text-sm font-medium">Track payments and financial status of your projects.</p>
                 </div>
-                {user?.role === 'Admin' && (
+                {['admin', 'owner', 'product_owner', 'product_manager'].includes(user?.role?.toLowerCase()) && (
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center space-x-2 px-5 py-2.5 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all"

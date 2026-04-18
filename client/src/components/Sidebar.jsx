@@ -10,20 +10,24 @@ const Sidebar = () => {
     const isActive = (path) => location.pathname === path;
 
     const navItems = [
-        { name: 'Dashboard', path: '/dashboard', icon: <Home size={18} /> },
-        { name: 'Clients', path: '/clients', icon: <Users size={18} /> },
-        { name: 'Projects', path: '/projects', icon: <Briefcase size={18} /> },
-        { name: 'Invoices', path: '/invoices', icon: <FileText size={18} /> },
-        { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} /> },
+        { name: 'Dashboard', path: '/dashboard', icon: <Home size={18} />, roles: ['all'] },
+        { name: 'Roadmap', path: '/roadmap', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_manager', 'product_owner'] },
+        { name: 'Sprints', path: '/sprints', icon: <Briefcase size={18} />, roles: ['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Standup', path: '/standup', icon: <Users size={18} />, roles: ['owner', 'admin', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Blockers', path: '/blockers', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Retro', path: '/retro', icon: <FileText size={18} />, roles: ['owner', 'admin', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Clients', path: '/clients', icon: <Users size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager'] },
+        { name: 'Projects', path: '/projects', icon: <Briefcase size={18} />, roles: ['all'] },
+        { name: 'Invoices', path: '/invoices', icon: <FileText size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager', 'client'] },
+        { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} />, roles: ['all'] },
+        { name: 'Analytics', path: '/analytics', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager'] },
+        { name: 'Organization', path: '/organization', icon: <Settings size={18} />, roles: ['owner', 'admin'] }
     ];
 
     const userRole = user?.role?.toLowerCase();
-    const isManager = ['admin', 'owner', 'product_owner', 'product_manager'].includes(userRole);
-
-    if (isManager) {
-        navItems.push({ name: 'Analytics', path: '/analytics', icon: <LayoutGrid size={18} /> });
-        navItems.push({ name: 'Organization', path: '/organization', icon: <Settings size={18} /> });
-    }
+    const visibleMenuItems = navItems.filter(item => 
+        item.roles.includes('all') || item.roles.includes(userRole)
+    );
 
     return (
         <div className="h-screen w-72 bg-[#0a0a0a]/80 backdrop-blur-xl text-white flex flex-col fixed left-0 top-0 z-50 shadow-2xl overflow-hidden border-r border-white/5">
@@ -36,9 +40,9 @@ const Sidebar = () => {
                 </h1>
             </div>
 
-            <nav className="flex-1 px-6 mt-4 space-y-1.5">
+            <nav className="flex-1 px-6 mt-4 space-y-1.5 overflow-y-auto custom-scrollbar">
                 <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Main Menu</p>
-                {navItems.map((item) => (
+                {visibleMenuItems.map((item) => (
                     <Link
                         key={item.path}
                         to={item.path}

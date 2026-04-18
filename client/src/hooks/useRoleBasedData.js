@@ -96,6 +96,104 @@ export const useRoleBasedData = (role, timeRange = 'Month') => {
             { type: 'client_added', user: 'Product Bot', action: 'captured request', target: 'Mobile App Sync', time: '1 hour ago' }
           ]
         };
+      } else if (roleLower === 'product_manager') {
+        mockData = {
+          roleName: 'Product Manager',
+          stats: [
+            { title: 'Project Health', value: 'Over 92%', trend: 'Good', color: 'emerald' },
+            { title: 'Stakeholders', value: '14', trend: 'Active', color: 'blue' },
+            { title: 'Budget Status', value: 'On Track', trend: '-2% dev', color: 'indigo' },
+            { title: 'Roadmap Progress', value: '68%', trend: '+4%', color: 'purple' }
+          ],
+          charts: {
+            roadmap: [
+              { name: 'Core API', progress: 100 },
+              { name: 'Dashboard', progress: 85 },
+              { name: 'Billing', progress: 40 },
+              { name: 'Analytics', progress: 15 }
+            ]
+          },
+          activities: [
+            { type: 'milestone', user: 'PM System', action: 'reached milestone', target: 'Beta Release', time: '1 day ago' }
+          ]
+        };
+      } else if (roleLower === 'scrum_master') {
+        mockData = {
+          roleName: 'Scrum Master',
+          stats: [
+            { title: 'Current Sprint', value: 'Sprint 46', trend: '8 days remaining', color: 'blue' },
+            { title: 'Points Progress', value: '45 / 60', trend: '75% Complete', color: 'indigo' },
+            { title: 'Team happiness', value: '4.2 / 5.0', trend: '+0.1 this week', color: 'emerald' },
+            { title: 'Active Blockers', value: '2', trend: 'Requires Attention', color: 'rose' }
+          ],
+          blockers: [
+            { id: 1, title: 'API Rate Limit - Prod', severity: 'P0', owner: 'DevOps', age: '2 days old', status: 'Blocked' },
+            { id: 2, title: 'Missing Design Assets', severity: 'P1', owner: 'Design', age: '1 day old', status: 'In Progress' }
+          ],
+          charts: {
+            burndown: [
+              { day: 'Day 1', actual: 60, ideal: 60 },
+              { day: 'Day 2', actual: 58, ideal: 55 },
+              { day: 'Day 3', actual: 52, ideal: 50 },
+              { day: 'Day 4', actual: 48, ideal: 45 },
+              { day: 'Day 5', actual: 45, ideal: 40 },
+              { day: 'Day 6', actual: 42, ideal: 35 },
+              { day: 'Day 7', actual: 35, ideal: 30 },
+              { day: 'Day 8', actual: null, ideal: 25 },
+              { day: 'Day 9', actual: null, ideal: 20 },
+              { day: 'Day 10', actual: null, ideal: 0 }
+            ],
+            velocity: [
+              { name: 'Sprint 41', points: 42 },
+              { name: 'Sprint 42', points: 48 },
+              { name: 'Sprint 43', points: 45 },
+              { name: 'Sprint 44', points: 52 },
+              { name: 'Sprint 45', points: 58 },
+              { name: 'Sprint 46', points: 45 }
+            ],
+            happiness: [
+              { day: 'Mon', score: 3.8 },
+              { day: 'Tue', score: 4.0 },
+              { day: 'Wed', score: 4.2 },
+              { day: 'Thu', score: 4.1 },
+              { day: 'Fri', score: 4.3 }
+            ]
+          },
+          retrospective: {
+            feedback: [
+              { id: 1, text: "The daily standups are getting too long.", category: "process", votes: 4 },
+              { id: 2, text: "Great teamwork on the API migration!", category: "celebration", votes: 6 },
+              { id: 3, text: "Need better documentation for the CI/CD pipeline.", category: "tooling", votes: 3 }
+            ],
+            actionItems: [
+              { id: 101, text: "Timebox standups to 15 mins", status: "In Progress", owner: "SM" },
+              { id: 102, text: "Schedule CI/CD deep dive", status: "Todo", owner: "Tech Lead" }
+            ]
+          },
+          activities: [
+            { type: 'blocker_added', user: 'Alex Dev', action: 'flagged blocker', target: 'API Rate Limit', time: '2 hours ago' },
+            { type: 'task_done', user: 'Sarah', action: 'completed', target: 'Dashboard Auth', time: '5 hours ago' }
+          ]
+        };
+      } else if (roleLower === 'client') {
+        mockData = {
+          roleName: 'Client Portal',
+          stats: [
+            { title: 'Project Status', value: 'In Progress', trend: 'On Schedule', color: 'blue' },
+            { title: 'Last Invoice', value: '$4,200', trend: 'Paid', color: 'emerald' },
+            { title: 'Unresolved Issues', value: '3', trend: 'Low Priority', color: 'amber' },
+            { title: 'Next Milestone', value: 'Beta', trend: 'May 15', color: 'indigo' }
+          ],
+          charts: {
+            budget: [
+              { name: 'Used', value: 65 },
+              { name: 'Remaining', value: 35 }
+            ]
+          },
+          activities: [
+            { type: 'milestone', user: 'AgencyOS', action: 'completed milestone', target: 'Design Phase', time: '1 week ago' }
+          ]
+        };
       } else if (roleLower === 'developer' || roleLower === 'contributor') {
         mockData = {
           roleName: 'Developer',

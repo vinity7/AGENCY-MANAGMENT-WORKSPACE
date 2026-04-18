@@ -116,33 +116,38 @@ const Analytics = () => {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass-card p-6 rounded-2xl flex items-center space-x-4 border-l-4 border-emerald-500/50">
-                    <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                        <TrendingUp size={24} />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-emerald-500/50">
+                    <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Business Value</p>
+                        <TrendingUp size={16} className="text-emerald-400" />
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Total Revenue</p>
-                        <h3 className="text-2xl font-black text-white">${revenueData.actual?.toLocaleString()}</h3>
-                    </div>
+                    <h3 className="text-2xl font-black text-white">$124,500</h3>
+                    <div className="text-[10px] font-bold text-emerald-500">+12% from last month</div>
                 </div>
-                <div className="glass-card p-6 rounded-2xl flex items-center space-x-4 border-l-4 border-blue-500/50">
-                    <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
-                        <Briefcase size={24} />
+                <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-blue-500/50">
+                    <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Strategic Alignment</p>
+                        <Briefcase size={16} className="text-blue-400" />
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Projected Goal</p>
-                        <h3 className="text-2xl font-black text-white">${revenueData.projected?.toLocaleString()}</h3>
-                    </div>
+                    <h3 className="text-2xl font-black text-white">84%</h3>
+                    <div className="text-[10px] font-bold text-blue-500 italic">Target: 80%</div>
                 </div>
-                <div className="glass-card p-6 rounded-2xl flex items-center space-x-4 border-l-4 border-rose-500/50">
-                    <div className="p-3 bg-rose-500/10 text-rose-400 rounded-xl">
-                        <Users size={24} />
+                <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-orange-500/50">
+                    <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Team Velocity</p>
+                        <Users size={16} className="text-orange-400" />
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Active Interns</p>
-                        <h3 className="text-2xl font-black text-white">{productivityData.length}</h3>
+                    <h3 className="text-2xl font-black text-white">42 pts</h3>
+                    <div className="text-[10px] font-bold text-orange-500">Avg / Sprint</div>
+                </div>
+                <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-rose-500/50">
+                    <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">SLA Performance</p>
+                        <ChevronRight size={16} className="text-rose-400" />
                     </div>
+                    <h3 className="text-2xl font-black text-white">96%</h3>
+                    <div className="text-[10px] font-bold text-rose-500">Blocker resolution</div>
                 </div>
             </div>
 

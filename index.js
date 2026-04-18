@@ -29,6 +29,13 @@ app.use('/api/email', require('./routes/emailRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/v1/organizations', require('./routes/teamRoutes'));
+app.use('/api/v1/roadmap', require('./routes/roadmapRoutes'));
+app.use('/api/v1/sprints', require('./routes/sprintRoutes'));
+app.use('/api/v1/standup', require('./routes/standupRoutes'));
+app.use('/api/v1/blockers', require('./routes/blockerRoutes'));
+app.use('/api/v1/tasks', require('./routes/scrumTaskRoutes'));
+app.use('/api/v1/retro', require('./routes/retroRoutes'));
+app.use('/api/v1/analytics', require('./routes/scrumAnalyticsRoutes'));
 
 // Health check endpoint for Render/Deployment platforms
 app.get('/health', (req, res) => {
@@ -94,10 +101,19 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 
+const http = require('http');
+const socketUtil = require('./utils/socket');
+
+const server = http.createServer(app);
+const io = socketUtil.init(server);
+
 // Define Routes
+// (existing routes...)
+
+const PORT = process.env.PORT || 5001;
 
 if (require.main === module) {
-    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server started on port ${PORT} with Socket.io`));
 }
 
-module.exports = app;
+module.exports = { app, server };

@@ -11,9 +11,14 @@ import {
     Briefcase,
     TrendingUp,
     Clock,
-    Layout
+    Layout,
+    MessageCircle,
+    ThumbsUp,
+    ThumbsDown,
+    Send
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { DoDChecklist } from './scrum/SharedScrumComponents';
 
 const TaskProgress = () => {
     const { id } = useParams();
@@ -141,6 +146,53 @@ const TaskProgress = () => {
                             </div>
                         </div>
                     </section>
+
+                    {/* DoD & Feedback Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <DoDChecklist 
+                            items={task.dodChecklist?.map(i => ({ text: i.item, completed: i.completed })) || []} 
+                            onToggle={async (idx) => {
+                                try {
+                                    const updatedDoD = [...task.dodChecklist];
+                                    updatedDoD[idx].completed = !updatedDoD[idx].completed;
+                                    setTask({ ...task, dodChecklist: updatedDoD });
+                                } catch (err) { console.error(err); }
+                            }}
+                        />
+
+                        <section className="bg-[#111111] border border-white/5 rounded-3xl p-8 space-y-6 flex flex-col">
+                            <div className="flex items-center space-x-3 text-blue-500 border-b border-white/5 pb-4">
+                                <MessageCircle size={18} />
+                                <h3 className="text-[10px] font-black uppercase tracking-widest">Feedback Thread</h3>
+                            </div>
+                            
+                            <div className="flex-1 space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                {task.feedback?.map((f, i) => (
+                                    <div key={i} className={`p-4 rounded-2xl border ${f.type === 'rejection' ? 'bg-rose-500/5 border-rose-500/20' : 'bg-white/5 border-white/5'}`}>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{f.user?.name || 'User'}</span>
+                                            <span className="text-[8px] font-bold text-slate-700">{new Date(f.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <p className={`text-xs ${f.type === 'rejection' ? 'text-rose-400' : 'text-slate-300'} font-medium italic leading-relaxed`}>"{f.text}"</p>
+                                    </div>
+                                ))}
+                                {(!task.feedback || task.feedback.length === 0) && (
+                                    <p className="text-center text-[10px] text-slate-600 uppercase font-black py-10 italic">No feedback entries yet.</p>
+                                )}
+                            </div>
+
+                            <div className="pt-4 flex gap-2">
+                                <input 
+                                    type="text" 
+                                    placeholder="Report constraint or gap..." 
+                                    className="flex-1 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-blue-500/50"
+                                />
+                                <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all">
+                                    <Send size={16} />
+                                </button>
+                            </div>
+                        </section>
+                    </div>
 
                     <section className="glass-card p-8 rounded-3xl group shadow-2xl">
                         <div className="flex justify-between items-end mb-10">
@@ -282,6 +334,20 @@ const TaskProgress = () => {
                         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8 flex items-center relative z-10">
                             <User size={14} className="mr-2 text-blue-500" /> Execute Crew
                         </h3>
+                        
+                        {(user?.role === 'product_owner' || user?.role === 'owner' || user?.role === 'admin') && task.status !== 'Completed' && (
+                            <div className="grid grid-cols-2 gap-3 mb-8 relative z-10">
+                                <button className="flex items-center justify-center space-x-2 py-3 bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                    <ThumbsUp size={14} />
+                                    <span>Accept</span>
+                                </button>
+                                <button className="flex items-center justify-center space-x-2 py-3 bg-rose-600/10 hover:bg-rose-600 border border-rose-500/20 text-rose-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                    <ThumbsDown size={14} />
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        )}
+
                         <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1 relative z-10">
                             {task.assignedMembers?.length > 0 ? (
                                 task.assignedMembers.map((member) => (

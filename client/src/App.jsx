@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { useContext, lazy, Suspense } from 'react';
 import './index.css';
+import RoleProtectedRoute from './components/RoleProtectedRoute';
 
 const Register = lazy(() => import('./pages/Register'));
 const Login = lazy(() => import('./pages/Login'));
@@ -15,6 +16,11 @@ const Tasks = lazy(() => import('./pages/Tasks'));
 const TaskProgress = lazy(() => import('./pages/TaskProgress'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Organization = lazy(() => import('./pages/Organization'));
+const Roadmap = lazy(() => import('./pages/Roadmap'));
+const Sprints = lazy(() => import('./pages/Sprints'));
+const Standup = lazy(() => import('./pages/Standup'));
+const Blockers = lazy(() => import('./pages/Blockers'));
+const Retro = lazy(() => import('./pages/Retro'));
 const Layout = lazy(() => import('./components/Layout'));
 
 
@@ -45,13 +51,38 @@ function App() {
               {/* Protected Routes with Layout */}
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/clients" element={<Clients />} />
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/invoices" element={<Invoices />} />
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/tasks/:id/progress" element={<TaskProgress />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/organization" element={<Organization />} />
+
+                {/* Scrum Routes */}
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_manager', 'product_owner']} />}>
+                  <Route path="/roadmap" element={<Roadmap />} />
+                </Route>
+
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor']} />}>
+                  <Route path="/sprints" element={<Sprints />} />
+                  <Route path="/blockers" element={<Blockers />} />
+                </Route>
+
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'scrum_master', 'developer', 'contributor']} />}>
+                  <Route path="/standup" element={<Standup />} />
+                  <Route path="/retro" element={<Retro />} />
+                </Route>
+
+                {/* Role Protected Routes */}
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_owner', 'product_manager']} />}>
+                  <Route path="/clients" element={<Clients />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                </Route>
+
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_owner', 'product_manager', 'client']} />}>
+                  <Route path="/invoices" element={<Invoices />} />
+                </Route>
+
+                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin']} />}>
+                  <Route path="/organization" element={<Organization />} />
+                </Route>
               </Route>
 
 

@@ -1,19 +1,29 @@
-/**
- * Role-Based Access Control Middleware
- */
-
-// Allow only specific roles
-exports.authorize = (...roles) => {
+// Unified permission check
+exports.hasPermission = (action) => {
     return (req, res, next) => {
         const userRole = req.user?.role?.toLowerCase();
-        const normalizedRoles = roles.map(r => r.toLowerCase());
         
-        // Owner always has access
-        if (userRole === 'owner' || normalizedRoles.includes(userRole)) {
+        const matrix = {
+            create_initiative: ['product_manager', 'owner', 'admin'],
+            convert_to_backlog: ['product_owner', 'owner', 'admin'],
+            plan_sprint: ['product_owner', 'scrum_master', 'owner', 'admin'],
+            override_capacity: ['product_manager', 'product_owner', 'owner', 'admin'],
+            report_blocker: ['scrum_master', 'developer', 'contributor', 'owner', 'admin'],
+            escalate_blocker: ['product_owner', 'scrum_master', 'owner', 'admin'],
+            resolve_blocker: ['scrum_master', 'owner', 'admin'],
+            post_standup: ['developer', 'contributor', 'owner', 'admin'],
+            create_retro: ['scrum_master', 'owner', 'admin'],
+            post_retro_card: ['developer', 'contributor', 'owner', 'admin'],
+            create_action_item: ['product_owner', 'scrum_master', 'owner', 'admin']
+        };
+
+        const allowedRoles = matrix[action] || [];
+        
+        if (allowedRoles.includes(userRole)) {
             next();
         } else {
             return res.status(403).json({
-                msg: `Role '${req.user?.role}' is not authorized to access this resource`
+                msg: `Role '${req.user?.role}' does not have permission for action: ${action}`
             });
         }
     };

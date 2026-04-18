@@ -100,7 +100,7 @@ const Clients = () => {
                     <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Clients</h1>
                     <p className="text-slate-500 mt-1 text-sm font-medium">Manage your agency relationships and contacts.</p>
                 </div>
-                {user?.role === 'Admin' && (
+                {['admin', 'owner', 'product_owner', 'product_manager'].includes(user?.role?.toLowerCase()) && (
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center space-x-2 px-5 py-2.5 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all hover:translate-y-[-2px]"
@@ -167,7 +167,7 @@ const Clients = () => {
                                                 }`}>
                                                 {client.status}
                                             </span>
-                                            {user?.role === 'Admin' && (
+                                            {['admin', 'owner'].includes(user?.role?.toLowerCase()) && (
                                                 <button
                                                     onClick={() => handleStatusToggle(client)}
                                                     className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
@@ -180,7 +180,7 @@ const Clients = () => {
                                     </td>
                                     <td className="px-8 py-5 whitespace-nowrap text-right">
                                         <div className="flex justify-end items-center space-x-2">
-                                            {user?.role === 'Admin' && (
+                                            {['admin', 'owner'].includes(user?.role?.toLowerCase()) && (
                                                 <button
                                                     onClick={() => handleDeleteClient(client._id)}
                                                     className="p-2 text-slate-400 hover:text-rose-600 transition-colors"
