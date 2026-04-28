@@ -39,7 +39,7 @@ const ScrumMasterDashboard = ({ data, loading }) => {
 
       {/* Row 2: Active Blockers Board (Full Width) */}
       <div className="w-full">
-        <BlockerBoard blockers={data?.blockers} />
+        <BlockerBoard blockers={data?.blockers || []} />
       </div>
 
       {/* Row 3: Charts (Burndown & Velocity) */}
@@ -49,8 +49,8 @@ const ScrumMasterDashboard = ({ data, loading }) => {
         </div>
         <div className="lg:col-span-5 bg-[#111111] border border-white/5 rounded-3xl p-6 flex flex-col h-[350px]">
           <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Velocity Trend (Last 6 Sprints)</h4>
-          <div className="flex-1 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="flex-1 w-full min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%" minHeight={250}>
               <BarChart data={data?.charts?.velocity}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 9, fontWeight: 700 }} />
@@ -71,7 +71,7 @@ const ScrumMasterDashboard = ({ data, loading }) => {
           <HappinessMeter score={4.2} trend={data?.charts?.happiness} />
         </div>
         <div className="lg:col-span-8">
-          <RetrospectiveTool data={data?.retrospective} />
+          <RetrospectiveTool data={data?.retrospective || {}} />
         </div>
       </div>
 

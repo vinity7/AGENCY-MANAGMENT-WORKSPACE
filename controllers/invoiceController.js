@@ -157,3 +157,51 @@ exports.deleteInvoice = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Generate invoice from completed uninvoiced tasks
+// @route   POST /api/invoices/generate-from-tasks
+// @access  Private (Admin only)
+exports.generateInvoiceFromTasks = async (req, res) => {
+    try {
+        const { projectId, clientId, ratePerTask = 100 } = req.body;
+        
+        const Task = require('../models/Task');
+        const Project = require('../models/Project');
+
+        // Find uninvoiced completed tasks
+        const tasks = await Task.find({
+            project: projectId,
+            orgId: req.user.orgId,
+            status: 'Completed',
+            invoiced: false
+        });
+
+        if (tasks.length === 0) {
+            return res.status(400).json({ msg: 'No uninvoiced completed tasks found for this project' });
+        }
+
+        const amount = tasks.length * ratePerTask;
+
+        const newInvoice = new Invoice({
+            client: clientId,
+            project: projectId,
+            amount,
+            dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+            orgId: req.user.orgId,
+            status: 'Pending'
+        });
+
+        const invoice = await newInvoice.save();
+
+        // Mark tasks as invoiced
+        await Task.updateMany(
+            { _id: { $in: tasks.map(t => t._id) } },
+            { $set: { invoiced: true } }
+        );
+
+        res.json(invoice);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

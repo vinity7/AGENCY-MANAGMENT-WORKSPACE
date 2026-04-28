@@ -1,34 +1,31 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { Download, FileText, TrendingUp, Users, Briefcase, ChevronRight } from 'lucide-react';
+import { Download, FileText, TrendingUp, Users, Briefcase, ChevronRight, DollarSign, Target, Zap, Activity, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const Analytics = () => {
+    const [summary, setSummary] = useState({ revenue: 0, alignment: 0, velocity: 0, sla: 0 });
     const [productivityData, setProductivityData] = useState([]);
-    const [revenueData, setRevenueData] = useState({});
     const [projectMetrics, setProjectMetrics] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
             try {
-                console.log('Fetching analytics data...');
-                const [prodRes, revRes, projRes] = await Promise.all([
+                const [summaryRes, prodRes, projRes] = await Promise.all([
+                    api.get('/analytics/summary'),
                     api.get('/analytics/productivity'),
-                    api.get('/analytics/revenue'),
                     api.get('/analytics/projects')
                 ]);
-                console.log('Analytics data received:', { prod: prodRes.data, rev: revRes.data, proj: projRes.data });
+                setSummary(summaryRes.data);
                 setProductivityData(prodRes.data || []);
-                setRevenueData(revRes.data || {});
                 setProjectMetrics(projRes.data || {});
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching analytics:', err);
                 if (err.response) {
-                    console.error('Response Status:', err.response.status);
                     console.error('Response Data:', err.response.data);
                 }
                 setLoading(false);
@@ -49,9 +46,10 @@ const Analytics = () => {
             startY: 40,
             head: [['Metric', 'Value']],
             body: [
-                ['Total Paid Revenue', `$${revenueData.actual}`],
-                ['Pending Revenue', `$${revenueData.pending}`],
-                ['Projected Revenue', `$${revenueData.projected}`],
+                ['Total Paid Revenue', `$${summary.revenue.toLocaleString()}`],
+                ['Strategic Alignment', `${summary.alignment}%`],
+                ['Team Velocity', `${summary.velocity} pts`],
+                ['SLA Performance', `${summary.sla}%`],
             ],
             theme: 'striped'
         });
@@ -120,34 +118,34 @@ const Analytics = () => {
                 <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-emerald-500/50">
                     <div className="flex justify-between items-center">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Business Value</p>
-                        <TrendingUp size={16} className="text-emerald-400" />
+                        <DollarSign size={16} className="text-emerald-400" />
                     </div>
-                    <h3 className="text-2xl font-black text-white">$124,500</h3>
-                    <div className="text-[10px] font-bold text-emerald-500">+12% from last month</div>
+                    <h3 className="text-2xl font-black text-white">${summary.revenue.toLocaleString()}</h3>
+                    <div className="text-[10px] font-bold text-emerald-500">Total Paid Revenue</div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-blue-500/50">
                     <div className="flex justify-between items-center">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Strategic Alignment</p>
-                        <Briefcase size={16} className="text-blue-400" />
+                        <Target size={16} className="text-blue-400" />
                     </div>
-                    <h3 className="text-2xl font-black text-white">84%</h3>
-                    <div className="text-[10px] font-bold text-blue-500 italic">Target: 80%</div>
+                    <h3 className="text-2xl font-black text-white">{summary.alignment}%</h3>
+                    <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Active Initiatives</div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-orange-500/50">
                     <div className="flex justify-between items-center">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Team Velocity</p>
-                        <Users size={16} className="text-orange-400" />
+                        <Zap size={16} className="text-orange-400" />
                     </div>
-                    <h3 className="text-2xl font-black text-white">42 pts</h3>
-                    <div className="text-[10px] font-bold text-orange-500">Avg / Sprint</div>
+                    <h3 className="text-2xl font-black text-white">{summary.velocity} pts</h3>
+                    <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">Avg / Sprint</div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex flex-col space-y-4 border-t-4 border-rose-500/50">
                     <div className="flex justify-between items-center">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">SLA Performance</p>
-                        <ChevronRight size={16} className="text-rose-400" />
+                        <Activity size={16} className="text-rose-400" />
                     </div>
-                    <h3 className="text-2xl font-black text-white">96%</h3>
-                    <div className="text-[10px] font-bold text-rose-500">Blocker resolution</div>
+                    <h3 className="text-2xl font-black text-white">{summary.sla}%</h3>
+                    <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Blocker resolution</div>
                 </div>
             </div>
 

@@ -33,7 +33,7 @@ const ProductManagerDashboard = ({ data, loading }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {data?.stats.map((stat, idx) => (
+        {(data?.stats || []).map((stat, idx) => (
           <StatCard key={idx} {...stat} loading={loading} />
         ))}
       </div>
@@ -42,7 +42,7 @@ const ProductManagerDashboard = ({ data, loading }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Revenue Forecast - 8 cols */}
         <div className="lg:col-span-8">
-          <RevenueChart data={data?.charts.revenueTrend} title="Feature Adoption vs Revenue" />
+          <RevenueChart data={data?.charts?.revenueTrend || []} title="Feature Adoption vs Revenue" />
         </div>
 
         {/* Market Insights - 4 cols */}

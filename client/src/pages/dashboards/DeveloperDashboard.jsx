@@ -36,7 +36,7 @@ const DeveloperDashboard = ({ data, loading }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {data?.stats.map((stat, idx) => (
+        {(data?.stats || []).map((stat, idx) => (
           <StatCard key={idx} {...stat} loading={loading} />
         ))}
       </div>
@@ -48,11 +48,11 @@ const DeveloperDashboard = ({ data, loading }) => {
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
            <TaskList 
              title="Ready to Start" 
-             tasks={data?.charts.tasks.todo} 
+             tasks={data?.charts?.tasks?.todo || []} 
            />
            <TaskList 
              title="In Progress" 
-             tasks={data?.charts.tasks.doing} 
+             tasks={data?.charts?.tasks?.doing || []} 
            />
         </div>
 

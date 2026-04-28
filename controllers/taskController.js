@@ -7,7 +7,17 @@ const sendEmail = require('../utils/emailService');
 // @access  Private (Admin or Lead)
 exports.createTask = async (req, res) => {
     try {
-        const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
+        const { 
+            name, description, project, assignedMembers, teamLead, milestones, 
+            dueDate, status, priority, reach, impact, confidence, effort 
+        } = req.body;
+
+        // Calculate RICE Score
+        const r = Number(reach) || 0;
+        const i = Number(impact) || 0;
+        const c = (Number(confidence) || 0) / 100;
+        const e = Number(effort) || 1;
+        const riceScore = (r * i * c) / e;
 
         const newTask = new Task({
             name,
@@ -19,6 +29,11 @@ exports.createTask = async (req, res) => {
             dueDate,
             status,
             priority: priority || 'Medium',
+            reach: r,
+            impact: i,
+            confidence: Number(confidence) || 100,
+            effort: e,
+            riceScore: riceScore,
             orgId: req.user.orgId,
         });
 
@@ -123,7 +138,10 @@ exports.getTaskById = async (req, res) => {
 // @access  Private (Admin or Lead)
 exports.updateTask = async (req, res) => {
     try {
-        const { name, description, project, assignedMembers, teamLead, milestones, dueDate, status, priority } = req.body;
+        const { 
+            name, description, project, assignedMembers, teamLead, milestones, 
+            dueDate, status, priority, reach, impact, confidence, effort 
+        } = req.body;
 
         let task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId });
         if (!task) return res.status(404).json({ msg: 'Task not found or access denied' });
@@ -138,6 +156,20 @@ exports.updateTask = async (req, res) => {
         if (dueDate) taskFields.dueDate = dueDate;
         if (status) taskFields.status = status;
         if (priority) taskFields.priority = priority;
+
+        // RICE Calculation for updates
+        if (reach !== undefined) taskFields.reach = Number(reach);
+        if (impact !== undefined) taskFields.impact = Number(impact);
+        if (confidence !== undefined) taskFields.confidence = Number(confidence);
+        if (effort !== undefined) taskFields.effort = Number(effort);
+
+        if (reach !== undefined || impact !== undefined || confidence !== undefined || effort !== undefined) {
+            const r = reach !== undefined ? Number(reach) : task.reach;
+            const i = impact !== undefined ? Number(impact) : task.impact;
+            const c = (confidence !== undefined ? Number(confidence) : task.confidence) / 100;
+            const e = effort !== undefined ? Number(effort) : task.effort;
+            taskFields.riceScore = (r * i * c) / (e || 1);
+        }
 
         task = await Task.findByIdAndUpdate(
             req.params.id,

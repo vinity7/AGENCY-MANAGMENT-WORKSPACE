@@ -110,7 +110,7 @@ const io = socketUtil.init(server);
 // Define Routes
 // (existing routes...)
 
-const PORT = process.env.PORT || 5001;
+
 
 if (require.main === module) {
     server.listen(PORT, () => console.log(`Server started on port ${PORT} with Socket.io`));

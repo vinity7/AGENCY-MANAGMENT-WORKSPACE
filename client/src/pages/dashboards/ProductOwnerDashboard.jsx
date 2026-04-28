@@ -38,7 +38,7 @@ const ProductOwnerDashboard = ({ data, loading }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {data?.stats.map((stat, idx) => (
+        {(data?.stats || []).map((stat, idx) => (
           <StatCard key={idx} {...stat} loading={loading} />
         ))}
       </div>
@@ -47,12 +47,12 @@ const ProductOwnerDashboard = ({ data, loading }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* RICE Priority Matrix - 8 cols */}
         <div className="lg:col-span-8">
-          <PriorityChart data={data?.charts.priorityMatrix} />
+          <PriorityChart data={data?.charts?.priorityMatrix || []} />
         </div>
 
         {/* Sprint Status - 4 cols */}
         <div className="lg:col-span-4">
-          <SprintProgress data={data?.charts.sprintProgress} />
+          <SprintProgress data={data?.charts?.sprintProgress || {}} />
         </div>
       </div>
 

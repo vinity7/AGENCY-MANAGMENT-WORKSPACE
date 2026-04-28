@@ -6,6 +6,7 @@ module.exports = function (req, res, next) {
 
     // Check if no token
     if (!token) {
+        console.log('Auth Failed: No token provided');
         return res.status(401).json({ msg: 'No token, authorization denied' });
     }
 
@@ -16,11 +17,13 @@ module.exports = function (req, res, next) {
         
         // Ensure orgId and role are present for multi-tenant apps
         if (!req.user.orgId || !req.user.role) {
+            console.log('Auth Failed: Token missing orgId or role', req.user);
             return res.status(401).json({ msg: 'Token missing tenant or role information' });
         }
         
         next();
     } catch (err) {
+        console.log('Auth Failed: Invalid token', err.message);
         res.status(401).json({ msg: 'Token is not valid' });
     }
 };

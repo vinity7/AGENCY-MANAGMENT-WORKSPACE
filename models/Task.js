@@ -54,6 +54,12 @@ const TaskSchema = new mongoose.Schema({
         item: { type: String, required: true },
         completed: { type: Boolean, default: false }
     }],
+    reach: { type: Number, default: 0 },
+    impact: { type: Number, default: 0 },
+    confidence: { type: Number, default: 100 }, // Percentage
+    effort: { type: Number, default: 1 },
+    riceScore: { type: Number, default: 0 },
+    invoiced: { type: Boolean, default: false },
     createdAt: {
         type: Date,
         default: Date.now,

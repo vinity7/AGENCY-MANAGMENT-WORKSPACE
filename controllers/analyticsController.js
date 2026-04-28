@@ -2,6 +2,52 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const Invoice = require('../models/Invoice');
 const User = require('../models/User');
+const Initiative = require('../models/Initiative');
+const Sprint = require('../models/Sprint');
+const Blocker = require('../models/Blocker');
+
+// @desc    Get operational summary for organization (The "Big 4" Metrics)
+// @route   GET /api/analytics/summary
+// @access  Private (Admin, Owner, PM)
+exports.getOperationalSummary = async (req, res) => {
+    try {
+        const orgId = req.user.orgId;
+
+        // 1. Business Value (Total Paid Revenue)
+        const invoices = await Invoice.find({ orgId });
+        const totalRevenue = invoices
+            .filter(inv => inv.status === 'Paid')
+            .reduce((sum, inv) => sum + inv.amount, 0);
+
+        // 2. Strategic Alignment (% Initiatives Active)
+        const initiatives = await Initiative.find({ organizationId: orgId });
+        const activeInitiatives = initiatives.filter(i => i.status === 'active').length;
+        const alignment = initiatives.length > 0 ? (activeInitiatives / initiatives.length) * 100 : 0;
+
+        // 3. Team Velocity (Avg points per completed sprint)
+        const completedSprints = await Sprint.find({ orgId, status: 'completed' });
+        let totalPoints = 0;
+        completedSprints.forEach(s => {
+            s.items.forEach(item => totalPoints += (item.estimate || 0));
+        });
+        const velocity = completedSprints.length > 0 ? totalPoints / completedSprints.length : 0;
+
+        // 4. SLA Performance (% Blockers Resolved)
+        const blockers = await Blocker.find({ organizationId: orgId });
+        const resolvedBlockers = blockers.filter(b => b.status === 'resolved').length;
+        const sla = blockers.length > 0 ? (resolvedBlockers / blockers.length) * 100 : 0;
+
+        res.json({
+            revenue: totalRevenue,
+            alignment: Math.round(alignment),
+            velocity: Math.round(velocity),
+            sla: Math.round(sla)
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
 
 // @desc    Get productivity metrics for organization users
 // @route   GET /api/analytics/productivity

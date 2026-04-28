@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Send, AlertTriangle } from 'lucide-react';
+import { Send, AlertTriangle, Loader2 } from 'lucide-react';
+import api from '../../api/axios';
 
 const StandupCheckin = () => {
     const [formData, setFormData] = useState({
@@ -8,11 +9,33 @@ const StandupCheckin = () => {
         blockers: '',
         hasBlocker: false
     });
+    const [status, setStatus] = useState({ type: '', message: '' });
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Standup Submitted:', formData);
-        // API call to POST /api/v1/standup/check-in
+        setLoading(true);
+        setStatus({ type: '', message: '' });
+
+        try {
+            await api.post('/v1/standup/check-in', {
+                yesterday: formData.yesterday,
+                today: formData.today,
+                blockers: formData.hasBlocker ? formData.blockers : 'None',
+                hasBlocker: formData.hasBlocker
+            });
+            
+            setStatus({ type: 'success', message: 'Team update sent successfully!' });
+            setFormData({ yesterday: '', today: '', blockers: '', hasBlocker: false });
+        } catch (err) {
+            console.error('Standup submission error:', err);
+            setStatus({ 
+                type: 'error', 
+                message: err.response?.data?.msg || 'Failed to send update. Please try again.' 
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -27,6 +50,12 @@ const StandupCheckin = () => {
                    <p className="text-slate-500 text-sm font-medium">Keep the team in flow. Your update is shared with the org.</p>
                 </div>
 
+                {status.message && (
+                    <div className={`p-4 rounded-2xl text-xs font-bold uppercase tracking-widest ${status.type === 'success' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}`}>
+                        {status.message}
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="space-y-6">
                         <div className="space-y-2">
@@ -35,6 +64,7 @@ const StandupCheckin = () => {
                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-sm text-slate-200 focus:border-emerald-500/50 outline-none transition-all placeholder:text-slate-700"
                              placeholder="e.g. Completed the auth middleware and integrated socket.io"
                              rows="3"
+                             required
                              value={formData.yesterday}
                              onChange={(e) => setFormData({...formData, yesterday: e.target.value})}
                            />
@@ -46,6 +76,7 @@ const StandupCheckin = () => {
                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-sm text-slate-200 focus:border-emerald-500/50 outline-none transition-all placeholder:text-slate-700"
                              placeholder="e.g. Building the RoadmapTimeline and InitiativeCard components"
                              rows="3"
+                             required
                              value={formData.today}
                              onChange={(e) => setFormData({...formData, today: e.target.value})}
                            />
@@ -69,6 +100,7 @@ const StandupCheckin = () => {
                                 className="w-full bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 text-sm text-rose-200 focus:border-rose-500/50 outline-none transition-all animate-in slide-in-from-top-2"
                                 placeholder="Describe exactly what's blocking you..."
                                 rows="3"
+                                required={formData.hasBlocker}
                                 value={formData.blockers}
                                 onChange={(e) => setFormData({...formData, blockers: e.target.value})}
                               />
@@ -76,9 +108,12 @@ const StandupCheckin = () => {
                         </div>
                     </div>
 
-                    <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-emerald-500/10 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-3">
-                       <Send size={18} />
-                       <span>Send Team Update</span>
+                    <button 
+                        disabled={loading}
+                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-emerald-500/10 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                       {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                       <span>{loading ? 'Sending...' : 'Send Team Update'}</span>
                     </button>
                 </form>
             </div>
@@ -87,3 +122,4 @@ const StandupCheckin = () => {
 };
 
 export default StandupCheckin;
+

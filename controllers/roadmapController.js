@@ -54,3 +54,29 @@ exports.convertToBacklog = async (req, res) => {
         res.status(500).json({ msg: 'Server Error' });
     }
 };
+
+// @desc    Update initiative (RICE scores, status, etc)
+// @route   PUT /api/v1/roadmap/initiatives/:id
+// @access  Private (PM, Owner, Admin)
+exports.updateInitiative = async (req, res) => {
+    try {
+        let initiative = await Initiative.findById(req.params.id);
+        if (!initiative) return res.status(404).json({ msg: 'Initiative not found' });
+
+        // Ensure user belongs to organization
+        if (initiative.organizationId.toString() !== req.user.orgId.toString()) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        initiative = await Initiative.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+
+        res.json(initiative);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};

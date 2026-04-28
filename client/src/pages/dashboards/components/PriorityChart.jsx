@@ -48,8 +48,8 @@ const PriorityChart = ({ data, title }) => {
 
       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">{title || 'RICE Priority Matrix'}</h4>
       
-      <div className="flex-1 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex-1 w-full min-h-[300px]">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" />
             <XAxis 

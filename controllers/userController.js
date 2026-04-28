@@ -36,7 +36,7 @@ exports.registerUser = async (req, res) => {
             name,
             email,
             password,
-            role: 'Admin', // The person who registers is always Admin/Owner
+            role: 'owner', // The person who registers is always Admin/Owner
         });
 
         await user.save();
@@ -109,20 +109,23 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log(`Login attempt for: ${email}`);
 
         // Check if user exists
-        let user = await User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
+            console.log(`Login failed: User ${email} not found`);
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
         // Match password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log(`Login failed: Password mismatch for ${email}`);
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // Return JWT
+        // Create JWT Payload
         const payload = {
             user: {
                 id: user.id,
@@ -131,29 +134,35 @@ exports.loginUser = async (req, res) => {
             },
         };
 
-        jwt.sign(
+        // Sign Token
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is missing from environment');
+        }
+
+        const token = jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: 360000 },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ 
-                    token, 
-                    user: { 
-                        id: user.id, 
-                        name: user.name, 
-                        email: user.email, 
-                        role: user.role,
-                        orgId: user.orgId
-                    } 
-                });
-            }
+            { expiresIn: '10h' }
         );
+
+        console.log(`Login successful: ${email} (${user.role})`);
+        res.json({ 
+            token, 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role,
+                orgId: user.orgId
+            } 
+        });
+
     } catch (err) {
-        console.error('Login Error:', err.message);
+        console.error('CRITICAL LOGIN ERROR:', err);
         res.status(500).json({ 
             msg: 'Login Server Error', 
-            error: process.env.NODE_ENV === 'production' ? err.message : err 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
         });
     }
 };
@@ -221,8 +230,9 @@ exports.inviteUser = async (req, res) => {
     try {
         const { name, email, role } = req.body;
         
-        // Only Admin can invite
-        if (req.user.role !== 'Admin') {
+        // Only Admin/Owner can invite
+        const callerRole = req.user.role?.toLowerCase();
+        if (callerRole !== 'admin' && callerRole !== 'owner') {
             return res.status(403).json({ msg: 'Unauthorized: Only Admins can invite users' });
         }
 

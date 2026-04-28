@@ -40,10 +40,15 @@ const Tasks = () => {
         dueDate: '',
         status: 'Pending',
         priority: 'Medium',
-        milestones: []
+        milestones: [],
+        reach: 0,
+        impact: 0,
+        confidence: 100,
+        effort: 1
     });
 
     const [newMilestone, setNewMilestone] = useState({ title: '', deadline: '' });
+    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'rice', 'priority'
 
     useEffect(() => {
         fetchTasks();
@@ -135,7 +140,11 @@ const Tasks = () => {
                 dueDate: '',
                 status: 'Pending',
                 priority: 'Medium',
-                milestones: []
+                milestones: [],
+                reach: 0,
+                impact: 0,
+                confidence: 100,
+                effort: 1
             });
         } catch (err) {
             console.error(err);
@@ -153,6 +162,17 @@ const Tasks = () => {
                 alert(err.response?.data?.msg || 'Failed to delete task');
             }
         }
+    };
+
+    const getSortedTasks = () => {
+        let sorted = [...tasks];
+        if (sortBy === 'rice') {
+            return sorted.sort((a, b) => (b.riceScore || 0) - (a.riceScore || 0));
+        } else if (sortBy === 'priority') {
+            const weights = { 'High': 3, 'Medium': 2, 'Low': 1 };
+            return sorted.sort((a, b) => (weights[b.priority] || 0) - (weights[a.priority] || 0));
+        }
+        return sorted; // default newest from API
     };
 
     const getPriorityStyles = (priority) => {
@@ -195,19 +215,30 @@ const Tasks = () => {
                     <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Team Task Engine</h1>
                     <p className="text-slate-500 mt-1 text-sm font-medium italic">Orchestrate collaborative workflows and track milestone progress.</p>
                 </div>
-                {user?.role === 'Admin' && (
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center space-x-2 px-5 py-2.5 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all font-sans"
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <select 
+                        value={sortBy} 
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-black text-blue-400 uppercase tracking-widest outline-none focus:ring-1 focus:ring-blue-500"
                     >
-                        <Plus size={18} />
-                        <span>Deploy Team Task</span>
-                    </button>
-                )}
+                        <option value="newest" className="bg-[#1a1a1a]">Sort: Newest</option>
+                        <option value="rice" className="bg-[#1a1a1a]">Sort: RICE Score</option>
+                        <option value="priority" className="bg-[#1a1a1a]">Sort: Priority</option>
+                    </select>
+                    {user?.role === 'Admin' && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center space-x-2 px-5 py-2.5 text-sm font-bold text-white premium-gradient rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all font-sans"
+                        >
+                            <Plus size={18} />
+                            <span>Deploy Team Task</span>
+                        </button>
+                    )}
+                </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasks.map((task) => (
+                {getSortedTasks().map((task) => (
                     <div key={task._id} className="glass-card p-6 rounded-2xl flex flex-col justify-between group hover:shadow-2xl transition-all duration-300 border-l-[6px] border-l-blue-500/50">
                         <div>
                             <div className="flex justify-between items-start mb-4">
@@ -215,18 +246,19 @@ const Tasks = () => {
                                     <span>{task.priority || 'Medium'}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
+                                    <div className="flex flex-col items-end">
+                                        <div className="text-[10px] font-black text-blue-400 uppercase tracking-tighter">RICE Score</div>
+                                        <div className="text-sm font-black text-white leading-none">{(task.riceScore || 0).toFixed(1)}</div>
+                                    </div>
                                     {user?.role === 'Admin' && (
                                         <button
                                             onClick={() => handleDeleteTask(task._id)}
-                                            className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors bg-white/5 rounded-lg hover:bg-white/10 shadow-sm"
+                                            className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors bg-white/5 rounded-lg hover:bg-white/10 shadow-sm ml-2"
                                             title="Delete Task"
                                         >
                                             <Trash2 size={16} />
                                         </button>
                                     )}
-                                    <div className="text-slate-300">
-                                        <MoreHorizontal size={18} />
-                                    </div>
                                 </div>
                             </div>
 
@@ -444,6 +476,30 @@ const Tasks = () => {
                             >
                                 <Plus size={16} />
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1">Reach</label>
+                            <input type="number" name="reach" value={formData.reach} onChange={handleChange} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-blue-500" placeholder="0" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1">Impact</label>
+                            <input type="number" step="0.5" name="impact" value={formData.impact} onChange={handleChange} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-blue-500" placeholder="0" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1">Conf %</label>
+                            <input type="number" name="confidence" value={formData.confidence} onChange={handleChange} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-blue-500" placeholder="100" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1">Effort</label>
+                            <input type="number" name="effort" value={formData.effort} onChange={handleChange} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-blue-500" placeholder="1" />
+                        </div>
+                        <div className="col-span-4 text-center">
+                            <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                                Projected RICE: {((formData.reach * formData.impact * (formData.confidence / 100)) / (formData.effort || 1)).toFixed(2)}
+                            </div>
                         </div>
                     </div>
 

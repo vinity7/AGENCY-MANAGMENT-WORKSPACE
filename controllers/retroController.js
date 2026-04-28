@@ -81,3 +81,45 @@ exports.createActionItem = async (req, res) => {
         res.status(500).json({ msg: 'Server Error' });
     }
 };
+
+// @desc    Convert action item to backlog task
+// @route   POST /api/v1/retro/boards/:id/actions/:actionId/convert
+// @access  Private (PO, SM)
+exports.convertActionToTask = async (req, res) => {
+    try {
+        const { projectId } = req.body;
+        const Task = require('../models/Task');
+        
+        const board = await RetroBoard.findById(req.params.id);
+        if (!board) return res.status(404).json({ msg: 'Board not found' });
+
+        const actionItem = board.actionItems.id(req.params.actionId);
+        if (!actionItem) return res.status(404).json({ msg: 'Action item not found' });
+
+        if (actionItem.linkedTaskId) {
+            return res.status(400).json({ msg: 'Task already created for this action item' });
+        }
+
+        // Create new task in backlog
+        const newTask = new Task({
+            name: `[RETRO] ${actionItem.text}`,
+            description: `Automated task from Retrospective Action Item. Type: ${actionItem.type}`,
+            project: projectId,
+            orgId: req.user.orgId,
+            status: 'Pending',
+            priority: 'Medium'
+        });
+
+        const task = await newTask.save();
+
+        // Update action item
+        actionItem.status = 'approved';
+        actionItem.linkedTaskId = task._id;
+        await board.save();
+
+        res.json({ board, task });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};
