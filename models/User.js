@@ -17,8 +17,35 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Admin', 'Intern'],
-        default: 'Intern',
+        enum: [
+            'owner', 'admin', 'lead', 'contributor', 'client', 'intern',
+            'product_owner', 'product_manager', 'developer', 'scrum_master'
+        ],
+        default: 'contributor',
+    },
+    roleVersion: {
+        type: Number,
+        default: 2
+    },
+    legacyRole: {
+        type: String
+    },
+    department: {
+        type: String,
+        trim: true
+    },
+    jobTitle: {
+        type: String,
+        trim: true
+    },
+    status: {
+        type: String,
+        enum: ['active', 'invited', 'inactive'],
+        default: 'active'
+    },
+    orgId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
     },
     createdAt: {
         type: Date,
@@ -26,10 +53,26 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
+// Instance method to get permissions
+UserSchema.methods.getPermissions = function() {
+    const matrix = {
+        owner: { view: 'everything', edit: 'everything', delete: 'everything' },
+        admin: { view: 'everything', edit: 'everything', delete: 'everything' },
+        product_owner: { view: 'projects,backlog,roadmap', edit: 'backlog,priorities', delete: 'features' },
+        product_manager: { view: 'analytics,roadmap,market_data', edit: 'roadmap,requirements', delete: 'roadmap_items' },
+        developer: { view: 'assigned_tasks,team_tasks', edit: 'own_tasks,comments', delete: 'own_tasks' },
+        scrum_master: { view: 'all_tasks,team_capacity', edit: 'sprints,retrospectives', delete: 'sprints' },
+        contributor: { view: 'assigned_tasks', edit: 'own_tasks', delete: 'nothing' },
+        client: { view: 'own_projects,invoices', edit: 'nothing', delete: 'nothing' }
+    };
+    
+    return matrix[this.role] || matrix.contributor;
+};
+
 // Encrypt password using bcrypt
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
 
     const salt = await bcrypt.genSalt(10);

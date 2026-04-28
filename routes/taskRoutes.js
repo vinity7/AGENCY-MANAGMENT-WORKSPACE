@@ -7,6 +7,7 @@ const {
     updateTask,
     deleteTask,
     updateTaskStatus,
+    toggleMilestone,
 } = require('../controllers/taskController');
 
 const auth = require('../middleware/auth');
@@ -37,9 +38,15 @@ router.put('/:id', auth, admin, updateTask);
 // @access  Private
 router.patch('/:id/status', auth, updateTaskStatus);
 
+// @route   PATCH /api/tasks/:id/milestones/:milestoneId
+// @desc    Toggle milestone completion
+// @access  Private
+router.patch('/:id/milestones/:milestoneId', auth, toggleMilestone);
+
 // @route   DELETE /api/tasks/:id
 // @desc    Delete task
 // @access  Private (Admin only)
 router.delete('/:id', auth, admin, deleteTask);
 
 module.exports = router;
+

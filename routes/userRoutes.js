@@ -1,34 +1,44 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
+const rbac = require('../middleware/rbac');
 const {
     registerUser,
-    getInterns,
+    loginUser,
+    getOrgUsers,
+    forgotPassword,
+    resetPassword,
+    inviteUser,
 } = require('../controllers/userController');
 
 // @route   POST /api/users/register
-// @desc    Register user
+// @desc    Register user (and Organization)
 // @access  Public
 router.post('/register', registerUser);
-
-// @route   GET /api/users/interns
-// @desc    Get all interns
-// @access  Public
-router.get('/interns', getInterns);
 
 // @route   POST /api/users/login
 // @desc    Login user
 // @access  Public
-router.post('/login', require('../controllers/userController').loginUser);
+router.post('/login', loginUser);
+
+// @route   GET /api/users/org-users
+// @desc    Get all users in organization
+// @access  Private
+router.get('/org-users', auth, getOrgUsers);
 
 // @route   POST /api/users/forgot-password
 // @desc    Forgot password
 // @access  Public
-router.post('/forgot-password', require('../controllers/userController').forgotPassword);
+router.post('/forgot-password', forgotPassword);
 
 // @route   POST /api/users/reset-password
 // @desc    Reset password
 // @access  Public
-router.post('/reset-password', require('../controllers/userController').resetPassword);
+router.post('/reset-password', resetPassword);
 
+// @route   POST /api/users/invite
+// @desc    Invite/Create a sub-user (Admin only)
+// @access  Private (Admin)
+router.post('/invite', auth, inviteUser);
 
 module.exports = router;

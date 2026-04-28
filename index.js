@@ -25,8 +25,22 @@ app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/email', require('./routes/emailRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/v1/organizations', require('./routes/teamRoutes'));
+app.use('/api/v1/roadmap', require('./routes/roadmapRoutes'));
+app.use('/api/v1/sprints', require('./routes/sprintRoutes'));
+app.use('/api/v1/standup', require('./routes/standupRoutes'));
+app.use('/api/v1/blockers', require('./routes/blockerRoutes'));
+app.use('/api/v1/tasks', require('./routes/scrumTaskRoutes'));
+app.use('/api/v1/retro', require('./routes/retroRoutes'));
+app.use('/api/v1/analytics', require('./routes/scrumAnalyticsRoutes'));
+
+// Health check endpoint for Render/Deployment platforms
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
 
 const fs = require('fs');
 const path = require('path');
@@ -43,10 +57,29 @@ app.get('/api/debug-paths', (req, res) => {
     });
 });
 
-// Serve static assets in production
-app.use(express.static(path.join(__dirname, 'client/dist')));
+// Diagnostic: List files in client/dist on startup
+const distPath = path.join(__dirname, 'client/dist');
+const assetsPath = path.join(distPath, 'assets');
 
-app.get('(.*)', (req, res) => {
+console.log('--- Production Asset Check ---');
+console.log('Searching for assets at:', distPath);
+if (fs.existsSync(distPath)) {
+    console.log('Contents of client/dist:', fs.readdirSync(distPath));
+    if (fs.existsSync(assetsPath)) {
+        console.log('Contents of client/dist/assets:', fs.readdirSync(assetsPath));
+    } else {
+        console.log('WARNING: client/dist/assets folder not found.');
+    }
+} else {
+    console.log('WARNING: client/dist folder not found.');
+}
+
+// Serve static assets in production
+app.use(express.static(distPath));
+// Fallback: serve assets from the assets folder at the root (solves Vite root request issue)
+app.use(express.static(assetsPath));
+
+app.get(/^(?!\/api).*/, (req, res) => {
     const indexPath = path.join(__dirname, 'client/dist', 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
@@ -57,11 +90,30 @@ app.get('(.*)', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-
-// Define Routes
-
-if (require.main === module) {
-    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Startup validation for production
+if (process.env.NODE_ENV === 'production') {
+    if (!process.env.MONGO_URI && !process.env.MONGO_URL) {
+        console.error('CRITICAL: MONGO_URI is missing from Render Environment Variables.');
+    }
+    if (!process.env.JWT_SECRET) {
+        console.error('CRITICAL: JWT_SECRET is missing from Render Environment Variables.');
+    }
 }
 
-module.exports = app;
+
+const http = require('http');
+const socketUtil = require('./utils/socket');
+
+const server = http.createServer(app);
+const io = socketUtil.init(server);
+
+// Define Routes
+// (existing routes...)
+
+
+
+if (require.main === module) {
+    server.listen(PORT, () => console.log(`Server started on port ${PORT} with Socket.io`));
+}
+
+module.exports = { app, server };

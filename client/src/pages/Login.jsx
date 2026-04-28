@@ -18,9 +18,11 @@ const Login = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        const success = await login(email, password);
-        if (success) {
+        const result = await login(email, password);
+        if (result.success) {
             navigate('/dashboard');
+        } else {
+            alert(`Login failed: ${result.msg || 'Invalid credentials'}`);
         }
     };
 
@@ -87,7 +89,7 @@ const Login = () => {
                         {/* If an image is available later, it can go here */}
                     </div>
 
-                    <div className="cosset-brand">AMW</div>
+                    <div className="cosset-brand">AgencyOS</div>
                 </div>
             </div>
         </div>

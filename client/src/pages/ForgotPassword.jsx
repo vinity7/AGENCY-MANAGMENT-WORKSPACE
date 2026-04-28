@@ -45,7 +45,7 @@ const ForgotPassword = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Charles@comet.co"
+                                placeholder="yourmail.co"
                                 className="custom-input"
                                 required
                             />
@@ -66,7 +66,7 @@ const ForgotPassword = () => {
                     <div className="shooting-star star-1"></div>
                     <div className="shooting-star star-2"></div>
                     <div className="planet-element"></div>
-                    <div className="cosset-brand">cosset</div>
+                    <div className="cosset-brand">AMW</div>
                 </div>
             </div>
         </div>

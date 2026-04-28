@@ -6,10 +6,13 @@ const {
     getInvoiceById,
     updateInvoice,
     deleteInvoice,
+    generateInvoiceFromTasks
 } = require('../controllers/invoiceController');
 
 const auth = require('../middleware/auth');
 const { admin } = require('../middleware/auth');
+
+router.post('/generate-from-tasks', auth, admin, generateInvoiceFromTasks);
 
 // @route   POST /api/invoices
 // @desc    Create a new invoice

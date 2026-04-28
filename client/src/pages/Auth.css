@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .login-page-wrapper {
-    background-color: #0c0c0c;
+    background-color: var(--bg-deep);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #ffffff;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
     padding: 2rem;
 }
 
@@ -16,11 +16,11 @@
     width: 100%;
     max-width: 1050px;
     min-height: 650px;
-    background: #141414;
+    background: var(--bg-surface);
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--glass-shadow);
+    border: 1px solid var(--glass-border);
 }
 
 .login-form-side {
@@ -56,9 +56,11 @@
 
 .sign-in-title {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 3rem;
-    color: #eeeeee;
+    color: var(--text-primary);
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
 }
 
 .input-container {
@@ -67,32 +69,33 @@
 
 .field-label {
     display: block;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #888888;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .custom-input,
 .custom-select {
     width: 100%;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
     border-radius: 12px;
     padding: 1rem 1.25rem;
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 1rem;
     transition: all 0.2s ease;
     appearance: none;
-    /* For select dropdown */
 }
 
 .custom-input:focus,
 .custom-select:focus {
     outline: none;
-    background: #202020;
-    border-color: #444444;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 .custom-select {
@@ -122,16 +125,18 @@
 
 .submit-btn {
     width: 100%;
-    background: linear-gradient(180deg, #444b55 0%, #2c313a 100%);
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
     color: #ffffff;
-    font-weight: 600;
+    font-weight: 800;
     padding: 1rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: none;
     margin-top: 1.5rem;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .submit-btn:hover {

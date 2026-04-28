@@ -5,10 +5,6 @@ const Project = require('../models/Project');
 // @access  Private (Admin only)
 exports.createProject = async (req, res) => {
     try {
-        console.log('--- Creating Project ---');
-        console.log('User:', req.user);
-        console.log('Body:', req.body);
-
         const { name, client, description, startDate, endDate, status } = req.body;
 
         const newProject = new Project({
@@ -18,23 +14,23 @@ exports.createProject = async (req, res) => {
             startDate,
             endDate,
             status,
+            orgId: req.user.orgId,
         });
 
         const project = await newProject.save();
-        console.log('Project saved successfully:', project._id);
         res.status(201).json(project);
     } catch (err) {
-        console.error('Create Project Catch Error:', err);
+        console.error('Create Project Error:', err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
-// @desc    Get all projects
+// @desc    Get all projects for the organization
 // @route   GET /api/projects
-// @access  Public
+// @access  Private
 exports.getProjects = async (req, res) => {
     try {
-        const projects = await Project.find()
+        const projects = await Project.find({ orgId: req.user.orgId })
             .populate('client', ['name', 'email'])
             .sort({ createdAt: -1 });
         res.json(projects);
@@ -44,15 +40,16 @@ exports.getProjects = async (req, res) => {
     }
 };
 
-// @desc    Get project by ID
+// @desc    Get project by ID within organization
 // @route   GET /api/projects/:id
-// @access  Public
+// @access  Private
 exports.getProjectById = async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id).populate('client', ['name', 'email']);
+        const project = await Project.findOne({ _id: req.params.id, orgId: req.user.orgId })
+            .populate('client', ['name', 'email']);
 
         if (!project) {
-            return res.status(404).json({ msg: 'Project not found' });
+            return res.status(404).json({ msg: 'Project not found or access denied' });
         }
 
         res.json(project);
@@ -65,9 +62,9 @@ exports.getProjectById = async (req, res) => {
     }
 };
 
-// @desc    Update project
+// @desc    Update project within organization
 // @route   PUT /api/projects/:id
-// @access  Private (Admin only)
+// @access  Private (Admin or Lead)
 exports.updateProject = async (req, res) => {
     try {
         const { name, client, description, startDate, endDate, status } = req.body;
@@ -80,9 +77,9 @@ exports.updateProject = async (req, res) => {
         if (endDate) projectFields.endDate = endDate;
         if (status) projectFields.status = status;
 
-        let project = await Project.findById(req.params.id);
+        let project = await Project.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
-        if (!project) return res.status(404).json({ msg: 'Project not found' });
+        if (!project) return res.status(404).json({ msg: 'Project not found or access denied' });
 
         project = await Project.findByIdAndUpdate(
             req.params.id,
@@ -100,18 +97,18 @@ exports.updateProject = async (req, res) => {
     }
 };
 
-// @desc    Delete project
+// @desc    Delete project within organization
 // @route   DELETE /api/projects/:id
 // @access  Private (Admin only)
 exports.deleteProject = async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id);
+        const project = await Project.findOne({ _id: req.params.id, orgId: req.user.orgId });
 
         if (!project) {
-            return res.status(404).json({ msg: 'Project not found' });
+            return res.status(404).json({ msg: 'Project not found or access denied' });
         }
 
-        await project.deleteOne({ _id: req.params.id });
+        await project.deleteOne();
 
         res.json({ msg: 'Project removed' });
     } catch (err) {
