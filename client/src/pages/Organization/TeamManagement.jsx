@@ -23,6 +23,14 @@ const TeamManagement = ({ token }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [message, setMessage] = useState('');
+  const [toast, setToast] = useState(null);
+
+  const triggerToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
 
   const config = {
     headers: { 'x-auth-token': token },
@@ -220,8 +228,19 @@ const TeamManagement = ({ token }) => {
         isOpen={showAddModal} 
         onClose={() => setShowAddModal(false)}
         token={token}
-        onUserAdded={fetchTeam}
+        onUserAdded={(successMsg) => {
+          fetchTeam();
+          triggerToast(successMsg || 'User account successfully instantiated within isolated company environment.');
+        }}
       />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-8 right-8 bg-[#0b0b0b] border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-2xl flex items-center space-x-3 shadow-2xl z-[200] animate-in slide-in-from-bottom-5 duration-300">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-widest">{toast}</span>
+        </div>
+      )}
 
     </div>
   );

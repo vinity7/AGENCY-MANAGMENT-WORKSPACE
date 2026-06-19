@@ -31,7 +31,7 @@ exports.hasPermission = (action) => {
 
 // Specialized middleware for "Financial Center" access
 exports.canAccessFinancials = (req, res, next) => {
-    if (req.user && req.user.role === 'Admin') {
+    if (req.user && req.user.role === 'admin') {
         next();
     } else {
         res.status(403).json({ msg: 'Access denied: Only Admins can access financial data' });
@@ -40,7 +40,7 @@ exports.canAccessFinancials = (req, res, next) => {
 
 // Specialized middleware for Client Portal (Read-only)
 exports.isClientStakeholder = (req, res, next) => {
-    if (req.user && req.user.role === 'Client') {
+    if (req.user && req.user.role === 'client') {
         // Here we could enforce read-only if it's a GET request, but for now we just check role
         next();
     } else {

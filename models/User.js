@@ -75,6 +75,11 @@ UserSchema.pre('save', async function () {
         return;
     }
 
+    // Prevent double hashing if password is already hashed (starts with $2a$, $2b$, or $2y$)
+    if (typeof this.password === 'string' && (this.password.startsWith('$2a$') || this.password.startsWith('$2b$') || this.password.startsWith('$2y$'))) {
+        return;
+    }
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });

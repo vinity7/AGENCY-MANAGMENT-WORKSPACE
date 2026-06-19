@@ -6,11 +6,13 @@ const {
     createSprint,
     getSprints,
     addItemsToSprint,
-    markAtRisk
+    markAtRisk,
+    updateSprint
 } = require('../controllers/sprintController');
 
 router.post('/', auth, hasPermission('plan_sprint'), createSprint);
 router.get('/', auth, getSprints);
+router.patch('/:id', auth, hasPermission('plan_sprint'), updateSprint);
 router.post('/:id/add-items', auth, hasPermission('plan_sprint'), addItemsToSprint);
 router.post('/:id/mark-at-risk/:itemId', auth, hasPermission('plan_sprint'), markAtRisk);
 

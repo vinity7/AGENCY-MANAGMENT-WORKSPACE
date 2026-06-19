@@ -117,7 +117,8 @@ exports.getTaskById = async (req, res) => {
         const task = await Task.findOne({ _id: req.params.id, orgId: req.user.orgId })
             .populate('project', ['name', 'description', 'status'])
             .populate('assignedMembers', ['name', 'email'])
-            .populate('teamLead', ['name', 'email']);
+            .populate('teamLead', ['name', 'email'])
+            .populate('feedback.user', ['name', 'role']);
 
         if (!task) {
             return res.status(404).json({ msg: 'Task not found or access denied' });
@@ -216,7 +217,7 @@ exports.updateTaskStatus = async (req, res) => {
         const isMember = task.assignedMembers.some(m => m._id.toString() === req.user.id);
         const isLead = task.teamLead && task.teamLead._id.toString() === req.user.id;
 
-        if (req.user.role !== 'Admin' && (!isLead && !isMember)) {
+        if (req.user.role !== 'admin' && (!isLead && !isMember)) {
             return res.status(403).json({ msg: 'Not authorized to update status' });
         }
 
@@ -245,7 +246,7 @@ exports.toggleMilestone = async (req, res) => {
 
         const isLead = task.teamLead && task.teamLead.toString() === req.user.id;
 
-        if (req.user.role !== 'Admin' && !isLead) {
+        if (req.user.role !== 'admin' && !isLead) {
             return res.status(403).json({ msg: 'Only the Team Lead and Administrators can check milestones.' });
         }
 

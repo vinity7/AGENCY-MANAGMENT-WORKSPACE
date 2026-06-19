@@ -27,7 +27,7 @@ exports.reportBlocker = async (req, res) => {
             // Email notifications to SMs and Admins
             const notifyList = await User.find({
                 orgId: req.user.orgId,
-                role: { $in: ['Admin', 'Scrum Master'] }
+                role: { $in: ['admin', 'scrum_master'] }
             });
 
             for (const user of notifyList) {
@@ -82,7 +82,24 @@ exports.escalateBlocker = async (req, res) => {
         if (!blocker) return res.status(404).json({ msg: 'Blocker not found' });
 
         blocker.escalated = true;
-        // In a real app, logic to find PO/PM would go here
+        await blocker.save();
+
+        res.json(blocker);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};
+
+// @desc    Resolve blocker
+// @route   PATCH /api/v1/blockers/:id/resolve
+// @access  Private (SM, Owner, Admin)
+exports.resolveBlocker = async (req, res) => {
+    try {
+        const blocker = await Blocker.findOne({ _id: req.params.id, organizationId: req.user.orgId });
+        if (!blocker) return res.status(404).json({ msg: 'Blocker not found' });
+
+        blocker.status = 'resolved';
         await blocker.save();
 
         res.json(blocker);

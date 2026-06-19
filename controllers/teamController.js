@@ -43,12 +43,26 @@ exports.getTeam = async (req, res) => {
  */
 exports.createOrgUser = async (req, res) => {
     try {
-        // Step 1: Restriction check
-        if (req.user.role !== 'owner' && req.user.role !== 'admin' && req.user.role !== 'Admin') {
+        const { role } = req.body;
+
+        // Controller Crash Mitigation: defensive parameter check
+        if (role === undefined || role === null || role === '') {
+            return res.status(400).json({ error: "Missing required parameter: role" });
+        }
+
+        // Asymmetric security layer check: block all traffic unless role matches 'admin'
+        const callerRole = req.user.role?.toLowerCase();
+        if (callerRole !== 'admin') {
             return res.status(403).json({ msg: 'Unauthorized: Only Admins can create users directly' });
         }
 
-        const { name, email, role, department, password, jobTitle } = req.body;
+        const { name, email, department, password, jobTitle } = req.body;
+
+        // Role limit check: must match 'product_owner', 'product_manager', or 'developer'
+        const validRoles = ['product_owner', 'product_manager', 'developer'];
+        if (!validRoles.includes(role.toLowerCase())) {
+            return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
+        }
 
         // Step 2: Check organization limit
         const org = await Organization.findById(req.user.orgId);
@@ -67,23 +81,22 @@ exports.createOrgUser = async (req, res) => {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
-        // Step 4: Handle Password
-        const generatedPassword = password || Math.random().toString(36).slice(-8);
+        // Step 4: Handle Password hashing sequence exactly once
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Step 5: Map Legacy Role back for API compatibility if needed (but we use the new role directly)
-        const scrumRoles = ['product_owner', 'product_manager', 'developer', 'scrum_master'];
+        // Step 5: Map Legacy Role back for API compatibility if needed
         const legacyMapping = {
             'product_owner': 'admin',
             'product_manager': 'lead',
-            'developer': 'contributor',
-            'scrum_master': 'lead'
+            'developer': 'contributor'
         };
 
         const newUser = new User({
             name,
             email,
             role: role.toLowerCase(),
-            password: generatedPassword,
+            password: hashedPassword,
             orgId: req.user.orgId,
             department,
             jobTitle,
@@ -102,8 +115,8 @@ exports.createOrgUser = async (req, res) => {
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role,
-                roleType: scrumRoles.includes(newUser.role) ? 'scrum' : 'legacy',
-                generatedPassword: generatedPassword, // We return the plain password once for the admin
+                roleType: 'scrum',
+                generatedPassword: password, // return the plain password for display once
                 loginUrl: `${req.protocol}://${req.get('host')}/login`
             }
         });

@@ -51,6 +51,10 @@ export const MyTasksKanban = () => {
 };
 
 export const DoDChecklist = ({ items, onToggle }) => {
+    const total = items?.length || 0;
+    const completed = items?.filter(item => item.completed).length || 0;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
     return (
         <div className="bg-[#111111] border border-white/5 rounded-2xl p-6 space-y-6">
             <div className="flex items-center space-x-3 text-emerald-500 border-b border-white/5 pb-4">
@@ -80,10 +84,13 @@ export const DoDChecklist = ({ items, onToggle }) => {
             <div className="pt-4">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Readiness Score</span>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase italic">80%</span>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase italic">{percentage}%</span>
                 </div>
                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 w-[80%] shadow-[0_0_10px_#10b981]"></div>
+                    <div 
+                        className="h-full bg-emerald-500 shadow-[0_0_10px_#10b981] transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                    ></div>
                 </div>
             </div>
         </div>

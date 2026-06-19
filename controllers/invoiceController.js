@@ -95,7 +95,7 @@ exports.updateInvoice = async (req, res) => {
 
         // Send Email Notification if status changed to Paid (to Admins of the SAME organization)
         if (status === 'Paid' && oldStatus !== 'Paid') {
-            const admins = await User.find({ role: 'Admin', orgId: req.user.orgId });
+            const admins = await User.find({ role: 'admin', orgId: req.user.orgId });
             for (const admin of admins) {
                 if (admin.email) {
                     try {

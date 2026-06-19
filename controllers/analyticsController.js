@@ -55,7 +55,7 @@ exports.getOperationalSummary = async (req, res) => {
 exports.getProductivity = async (req, res) => {
     try {
         // Leads and Admins both represent the "workforce" in this context
-        const users = await User.find({ orgId: req.user.orgId, role: { $ne: 'Client' } });
+        const users = await User.find({ orgId: req.user.orgId, role: { $ne: 'client' } });
         
         const productivity = await Promise.all(users.map(async (user) => {
             const completedTasks = await Task.countDocuments({

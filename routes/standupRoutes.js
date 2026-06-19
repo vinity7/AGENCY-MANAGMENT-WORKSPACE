@@ -8,6 +8,7 @@ const {
 } = require('../controllers/standupController');
 
 router.post('/check-in', auth, hasPermission('post_standup'), postCheckin);
-router.get('/team-summary', auth, hasPermission('create_retro'), getTeamSummary); // SM permission used here
+router.post('/', auth, hasPermission('post_standup'), postCheckin);
+router.get('/team-summary', auth, getTeamSummary); // Unified read permission check
 
 module.exports = router;

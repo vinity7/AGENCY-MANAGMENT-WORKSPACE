@@ -72,3 +72,22 @@ exports.markAtRisk = async (req, res) => {
         res.status(500).json({ msg: 'Server Error' });
     }
 };
+
+// @desc    Update sprint details
+// @route   PATCH /api/v1/sprints/:id
+// @access  Private (PO, SM, Owner, Admin)
+exports.updateSprint = async (req, res) => {
+    try {
+        const sprint = await Sprint.findOneAndUpdate(
+            { _id: req.params.id, orgId: req.user.orgId },
+            req.body,
+            { new: true }
+        ).populate('items.taskId');
+        if (!sprint) return res.status(404).json({ msg: 'Sprint not found' });
+        res.json(sprint);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+};
+

@@ -38,6 +38,13 @@ exports.getDashboardStats = async (req, res) => {
         const invoices = await Invoice.find(finalFilter);
         const invoicesCount = invoices.length;
         const totalAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+        
+        const paidRevenue = invoices
+            .filter(inv => inv.status === 'Paid')
+            .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+        const pendingRevenue = invoices
+            .filter(inv => inv.status === 'Pending')
+            .reduce((sum, inv) => sum + (inv.amount || 0), 0);
 
         const pendingTasks = await Task.countDocuments({ ...taskFilter, status: 'Pending' });
         const inProgressTasks = await Task.countDocuments({ ...taskFilter, status: 'In Progress' });
@@ -75,14 +82,36 @@ exports.getDashboardStats = async (req, res) => {
             revenueTrend.push({ month: mName, revenue: monthlyRevenue || (1000 + (mIdx * 500)) });
         }
 
+        const isExec = req.user.role === 'owner' || req.user.role === 'admin';
+        const stats = isExec ? [
+            { title: 'Clients', value: clientsCount, trend: 'Total', color: 'blue' },
+            { title: 'Active Projects', value: projectsCount, trend: 'Current', color: 'purple' },
+            { title: 'Cash Flow (Paid)', value: `$${paidRevenue.toLocaleString()}`, trend: 'Received', color: 'emerald' },
+            { title: 'Pending Payments', value: `$${pendingRevenue.toLocaleString()}`, trend: 'Invoiced', color: 'indigo' }
+        ] : [
+            { title: req.user.role === 'client' ? 'Active Invoices' : 'Clients', value: req.user.role === 'client' ? invoicesCount : clientsCount, trend: 'Total', color: 'blue' },
+            { title: 'Active Projects', value: projectsCount, trend: 'Current', color: 'purple' },
+            { title: 'Task Progress', value: `${completedTasks}/${tasksCount}`, trend: 'Completed', color: 'indigo' },
+            { title: 'Total Value', value: `$${totalAmount.toLocaleString()}`, trend: 'Est.', color: 'emerald' }
+        ];
+
+        const activities = isExec ? activeProjects.map(p => ({
+            type: 'project',
+            user: 'System',
+            action: 'monitored health of',
+            target: p.name,
+            time: 'Recent'
+        })) : recentTasks.map(t => ({
+            type: 'task',
+            user: 'Team Member',
+            action: 'updated task',
+            target: t.name,
+            time: 'Recent'
+        }));
+
         res.json({
             roleName: req.user.role === 'owner' ? 'Organization Lead' : req.user.role.toUpperCase(),
-            stats: [
-                { title: req.user.role === 'client' ? 'Active Invoices' : 'Clients', value: req.user.role === 'client' ? invoicesCount : clientsCount, trend: 'Total', color: 'blue' },
-                { title: 'Active Projects', value: projectsCount, trend: 'Current', color: 'purple' },
-                { title: 'Task Progress', value: `${completedTasks}/${tasksCount}`, trend: 'Completed', color: 'indigo' },
-                { title: 'Total Value', value: `$${totalAmount.toLocaleString()}`, trend: 'Est.', color: 'emerald' }
-            ],
+            stats,
             charts: {
                 projectHealth: projectStatusDist.map(d => ({ 
                     name: d._id || 'Planning', 
@@ -92,13 +121,7 @@ exports.getDashboardStats = async (req, res) => {
                 taskStatus: taskStatusDist.map(d => ({ name: d._id, value: d.value })),
                 revenueTrend
             },
-            activities: recentTasks.map(t => ({
-                type: 'task',
-                user: 'Team Member',
-                action: 'updated task',
-                target: t.name,
-                time: 'Recent'
-            })),
+            activities,
             activeProjects,
             recentTasks,
             invoices: invoices.slice(0, 5), // Return recent invoices for client portal

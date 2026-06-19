@@ -18,7 +18,7 @@ const StandupCheckin = () => {
         setStatus({ type: '', message: '' });
 
         try {
-            await api.post('/v1/standup/check-in', {
+            await api.post('/v1/scrum/standups', {
                 yesterday: formData.yesterday,
                 today: formData.today,
                 blockers: formData.hasBlocker ? formData.blockers : 'None',

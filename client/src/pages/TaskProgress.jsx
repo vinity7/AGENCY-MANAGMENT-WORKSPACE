@@ -26,6 +26,7 @@ const TaskProgress = () => {
     const { user } = useContext(AuthContext);
     const [task, setTask] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [feedbackText, setFeedbackText] = useState('');
 
     useEffect(() => {
         fetchTaskDetails();
@@ -58,6 +59,52 @@ const TaskProgress = () => {
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.msg || 'Failed to update checkpoint');
+        }
+    };
+
+    const handleAddFeedback = async (e) => {
+        if (e) e.preventDefault();
+        if (!feedbackText.trim()) return;
+
+        try {
+            const res = await api.post(`/v1/tasks/${id}/feedback`, {
+                text: feedbackText,
+                type: 'comment'
+            });
+            setTask(res.data);
+            setFeedbackText('');
+        } catch (err) {
+            console.error('Failed to submit comment:', err);
+            alert(err.response?.data?.msg || 'Failed to submit comment');
+        }
+    };
+
+    const handleAcceptTask = async () => {
+        if (!window.confirm('Are you sure you want to accept this task? It will be marked as Completed.')) return;
+        try {
+            await api.post(`/v1/tasks/${id}/accept`);
+            alert('Task accepted successfully!');
+            fetchTaskDetails();
+        } catch (err) {
+            console.error('Accept task error:', err);
+            alert(err.response?.data?.msg || 'Failed to accept task');
+        }
+    };
+
+    const handleRejectTask = async () => {
+        const reason = window.prompt('Please enter the reason for rejection:');
+        if (reason === null) return; // Cancelled
+        if (!reason.trim()) {
+            alert('Rejection reason is required.');
+            return;
+        }
+        try {
+            await api.post(`/v1/tasks/${id}/reject`, { reason });
+            alert('Task rejected and returned to backlog.');
+            fetchTaskDetails();
+        } catch (err) {
+            console.error('Reject task error:', err);
+            alert(err.response?.data?.msg || 'Failed to reject task');
         }
     };
 
@@ -153,10 +200,18 @@ const TaskProgress = () => {
                             items={task.dodChecklist?.map(i => ({ text: i.item, completed: i.completed })) || []} 
                             onToggle={async (idx) => {
                                 try {
-                                    const updatedDoD = [...task.dodChecklist];
-                                    updatedDoD[idx].completed = !updatedDoD[idx].completed;
-                                    setTask({ ...task, dodChecklist: updatedDoD });
-                                } catch (err) { console.error(err); }
+                                    const updatedDoD = task.dodChecklist.map((item, i) => 
+                                        i === idx ? { ...item, completed: !item.completed } : item
+                                    );
+                                    // Optimistic update
+                                    setTask(prev => ({ ...prev, dodChecklist: updatedDoD }));
+
+                                    // Persist change
+                                    const res = await api.patch(`/v1/tasks/${id}`, { dodChecklist: updatedDoD });
+                                    setTask(res.data);
+                                } catch (err) { 
+                                    console.error(err); 
+                                }
                             }}
                         />
 
@@ -171,7 +226,7 @@ const TaskProgress = () => {
                                     <div key={i} className={`p-4 rounded-2xl border ${f.type === 'rejection' ? 'bg-rose-500/5 border-rose-500/20' : 'bg-white/5 border-white/5'}`}>
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{f.user?.name || 'User'}</span>
-                                            <span className="text-[8px] font-bold text-slate-700">{new Date(f.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-[8px] font-bold text-slate-750">{new Date(f.createdAt).toLocaleDateString()}</span>
                                         </div>
                                         <p className={`text-xs ${f.type === 'rejection' ? 'text-rose-400' : 'text-slate-300'} font-medium italic leading-relaxed`}>"{f.text}"</p>
                                     </div>
@@ -181,16 +236,18 @@ const TaskProgress = () => {
                                 )}
                             </div>
 
-                            <div className="pt-4 flex gap-2">
+                            <form onSubmit={handleAddFeedback} className="pt-4 flex gap-2">
                                 <input 
                                     type="text" 
                                     placeholder="Report constraint or gap..." 
+                                    value={feedbackText}
+                                    onChange={e => setFeedbackText(e.target.value)}
                                     className="flex-1 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-blue-500/50"
                                 />
-                                <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all">
+                                <button type="submit" className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all">
                                     <Send size={16} />
                                 </button>
-                            </div>
+                            </form>
                         </section>
                     </div>
 
@@ -335,13 +392,19 @@ const TaskProgress = () => {
                             <User size={14} className="mr-2 text-blue-500" /> Execute Crew
                         </h3>
                         
-                        {(user?.role === 'product_owner' || user?.role === 'owner' || user?.role === 'admin') && task.status !== 'Completed' && (
+                        {(user?.role === 'product_owner' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'scrum_master') && task.status !== 'Completed' && (
                             <div className="grid grid-cols-2 gap-3 mb-8 relative z-10">
-                                <button className="flex items-center justify-center space-x-2 py-3 bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                <button 
+                                    onClick={handleAcceptTask}
+                                    className="flex items-center justify-center space-x-2 py-3 bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                >
                                     <ThumbsUp size={14} />
                                     <span>Accept</span>
                                 </button>
-                                <button className="flex items-center justify-center space-x-2 py-3 bg-rose-600/10 hover:bg-rose-600 border border-rose-500/20 text-rose-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                <button 
+                                    onClick={handleRejectTask}
+                                    className="flex items-center justify-center space-x-2 py-3 bg-rose-600/10 hover:bg-rose-600 border border-rose-500/20 text-rose-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                >
                                     <ThumbsDown size={14} />
                                     <span>Reject</span>
                                 </button>

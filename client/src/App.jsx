@@ -52,20 +52,24 @@ function App() {
               <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/tasks/:id/progress" element={<TaskProgress />} />
+
+                {/* Exclude owner/admin from Tasks */}
+                <Route element={<RoleProtectedRoute allowedRoles={['product_owner', 'product_manager', 'scrum_master', 'developer', 'contributor', 'client', 'intern']} />}>
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/tasks/:id/progress" element={<TaskProgress />} />
+                </Route>
 
                 {/* Scrum Routes */}
                 <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_manager', 'product_owner']} />}>
                   <Route path="/roadmap" element={<Roadmap />} />
                 </Route>
 
-                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor']} />}>
+                <Route element={<RoleProtectedRoute allowedRoles={['product_owner', 'scrum_master', 'developer', 'contributor']} />}>
                   <Route path="/sprints" element={<Sprints />} />
                   <Route path="/blockers" element={<Blockers />} />
                 </Route>
 
-                <Route element={<RoleProtectedRoute allowedRoles={['owner', 'admin', 'scrum_master', 'developer', 'contributor']} />}>
+                <Route element={<RoleProtectedRoute allowedRoles={['scrum_master', 'developer', 'contributor']} />}>
                   <Route path="/standup" element={<Standup />} />
                   <Route path="/retro" element={<Retro />} />
                 </Route>

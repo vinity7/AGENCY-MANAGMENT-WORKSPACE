@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+    "dev:all": "npx --yes concurrently \"npm run dev\" \"npm run dev --prefix client\"",
     "start": "node index.js",
     "build": "cd client && npm ci && npm run build",
     "prod": "npm run build && node index.js",

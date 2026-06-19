@@ -12,14 +12,14 @@ const Sidebar = () => {
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: <Home size={18} />, roles: ['all'] },
         { name: 'Roadmap', path: '/roadmap', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_manager', 'product_owner'] },
-        { name: 'Sprints', path: '/sprints', icon: <Briefcase size={18} />, roles: ['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor'] },
-        { name: 'Standup', path: '/standup', icon: <Users size={18} />, roles: ['owner', 'admin', 'scrum_master', 'developer', 'contributor'] },
-        { name: 'Blockers', path: '/blockers', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_owner', 'scrum_master', 'developer', 'contributor'] },
-        { name: 'Retro', path: '/retro', icon: <FileText size={18} />, roles: ['owner', 'admin', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Sprints', path: '/sprints', icon: <Briefcase size={18} />, roles: ['product_owner', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Standup', path: '/standup', icon: <Users size={18} />, roles: ['scrum_master', 'developer', 'contributor'] },
+        { name: 'Blockers', path: '/blockers', icon: <LayoutGrid size={18} />, roles: ['product_owner', 'scrum_master', 'developer', 'contributor'] },
+        { name: 'Retro', path: '/retro', icon: <FileText size={18} />, roles: ['scrum_master', 'developer', 'contributor'] },
         { name: 'Clients', path: '/clients', icon: <Users size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager'] },
         { name: 'Projects', path: '/projects', icon: <Briefcase size={18} />, roles: ['all'] },
         { name: 'Invoices', path: '/invoices', icon: <FileText size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager', 'client'] },
-        { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} />, roles: ['all'] },
+        { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={18} />, roles: ['product_owner', 'product_manager', 'scrum_master', 'developer', 'contributor', 'client', 'intern'] },
         { name: 'Analytics', path: '/analytics', icon: <LayoutGrid size={18} />, roles: ['owner', 'admin', 'product_owner', 'product_manager'] },
         { name: 'Organization', path: '/organization', icon: <Settings size={18} />, roles: ['owner', 'admin'] }
     ];

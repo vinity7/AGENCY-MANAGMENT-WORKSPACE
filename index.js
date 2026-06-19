@@ -36,6 +36,7 @@ app.use('/api/v1/blockers', require('./routes/blockerRoutes'));
 app.use('/api/v1/tasks', require('./routes/scrumTaskRoutes'));
 app.use('/api/v1/retro', require('./routes/retroRoutes'));
 app.use('/api/v1/analytics', require('./routes/scrumAnalyticsRoutes'));
+app.use('/api/v1/scrum/standups', require('./routes/standupRoutes'));
 
 // Health check endpoint for Render/Deployment platforms
 app.get('/health', (req, res) => {
@@ -100,17 +101,11 @@ if (process.env.NODE_ENV === 'production') {
     }
 }
 
-
 const http = require('http');
 const socketUtil = require('./utils/socket');
 
 const server = http.createServer(app);
 const io = socketUtil.init(server);
-
-// Define Routes
-// (existing routes...)
-
-
 
 if (require.main === module) {
     server.listen(PORT, () => console.log(`Server started on port ${PORT} with Socket.io`));

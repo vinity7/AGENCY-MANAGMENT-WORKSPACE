@@ -78,7 +78,7 @@ const Tasks = () => {
 
     const fetchInterns = async () => {
         try {
-            const res = await api.get('/users/interns');
+            const res = await api.get('/users/org-users', { params: { orgId: user?.orgId } });
             setInterns(res.data);
         } catch (err) {
             console.error(err);

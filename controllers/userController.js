@@ -203,11 +203,13 @@ exports.forgotPassword = async (req, res) => {
 
 // @desc    Reset Password
 // @route   POST /api/users/reset-password
-// @access  Public
+// @access  Private
 exports.resetPassword = async (req, res) => {
     try {
-        const { email, newPassword } = req.body;
-        const user = await User.findOne({ email });
+        const { newPassword } = req.body;
+        
+        // Find user by authenticated req.user.id
+        const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });

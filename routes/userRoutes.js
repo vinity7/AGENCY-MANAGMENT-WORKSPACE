@@ -33,8 +33,8 @@ router.post('/forgot-password', forgotPassword);
 
 // @route   POST /api/users/reset-password
 // @desc    Reset password
-// @access  Public
-router.post('/reset-password', resetPassword);
+// @access  Private
+router.post('/reset-password', auth, resetPassword);
 
 // @route   POST /api/users/invite
 // @desc    Invite/Create a sub-user (Admin only)

@@ -39,6 +39,11 @@ const TaskSchema = new mongoose.Schema({
         enum: ['Low', 'Medium', 'High'],
         default: 'Medium',
     },
+    refinementState: {
+        type: String,
+        enum: ['Discovery', 'Validated', 'Ready for Development'],
+        default: 'Discovery',
+    },
     orgId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organization',
@@ -67,4 +72,3 @@ const TaskSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Task', TaskSchema);
-
